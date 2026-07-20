@@ -379,13 +379,17 @@ SC.flow = {
   },
   // จบรอบ: ประมวลผลเบื้องหลังทันที ไม่มีหน้าจอรอ — เข้ารอบใหม่ต่อเนื่อง
   endRound: function () {
+    var self = this;
     SC.resolve.endRound();
-    if (SC.state.week >= SC.config.weeks) {
-      SC.main.renderEnd();
-    } else {
+    var go = function () {
+      if (SC.state.week >= SC.config.weeks) { SC.main.renderEnd(); return; }
       SC.state.week += 1;
-      this.startRound();
-    }
+      self.startRound();
+    };
+    // ภัยพิบัติที่ถูกเลื่อนข้ามรอบมาแล้ว → ยิงทิ้งท้ายรอบ (ไม่มีคัตซีนบนแมป เพราะไม่มีจอแมปตอนนี้)
+    //   กันเคสหลบด้วยการจบเทิร์น/ข้ามดูบอทเร็วทุกครั้ง (user 2026-07-20)
+    if (SC.events && SC.events.overdueDisaster()) SC.events.fireDisaster(go);
+    else go();
   },
   restart: function () {
     SC.main.renderSetup();

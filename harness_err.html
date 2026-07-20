@@ -114,6 +114,26 @@
             SC.events.initState(SC.state);
             SC.state.events.pendingDisaster = { id: (location.search.match(/[?&]id=(\w+)/) || [])[1] || 'hurricane', actorId: 'player' };
             SC.turn._mapPhase(SC.state.player, function () {});
+          } else if (mode === 'disskip') {
+            // จองภัยไว้ที่เทิร์นผู้เล่น แล้ว "กดจบเทิร์นทันที" — ต้องยิงก่อนปิดเทิร์น ไม่ใช่หลบได้
+            SC.flow.startGame(3);
+            SC.state.week = 3;
+            SC.events.initState(SC.state);
+            SC.state.events.pendingDisaster = { id: (location.search.match(/[?&]id=(\w+)/) || [])[1] || 'meteor', actorId: 'player' };
+            SC.turn._mapPhase(SC.state.player, function () { window.__turnEnded = true; });
+            setTimeout(function () {
+              var b = document.getElementById('endTurnBtn');
+              window.__clicked = !!b;
+              if (b) b.click();
+            }, 1500);
+          } else if (mode === 'disoverdue') {
+            // ภัยที่ถูกเลื่อนข้ามรอบมาแล้ว (carried=1) → ต้องถูกยิงทิ้งท้ายรอบก่อนขึ้นรอบใหม่
+            SC.flow.startGame(3);
+            SC.state.week = 3;
+            SC.events.initState(SC.state);
+            SC.state.events.pendingDisaster = { id: 'hurricane', actorId: 'bot0', carried: 1 };
+            window.__weekBefore = SC.state.week;
+            SC.flow.endRound();
           } else if (mode === 'disaster') {
             // ตรวจโควตาภัยพิบัติต่อเกม (ควร ≈ weeks/10) + ไม่หลุดเข้าการสุ่มปกติ
             var out = {};
@@ -161,11 +181,23 @@
         st.id = 'stateDump';
         st.textContent = '=== STATE DUMP ===\nerrs=' + window.__errs.length +
           '\nroundsOk=' + !!window.__roundsOk +
+          '\nclicked=' + !!window.__clicked + ' turnEnded=' + !!window.__turnEnded +
+          '\npendingLeft=' + (SC.state && SC.state.events ? !!SC.state.events.pendingDisaster : '-') +
+          '\nclosedNow=' + (SC.state && SC.state.events ? JSON.stringify(SC.state.events.closed) : '-') +
           '\nsimOut=' + (window.__simOut ? JSON.stringify(window.__simOut) : '-') +
           '\nscreen html len=' + (scr ? scr.innerHTML.length : -1) +
           '\nscreen first 600 chars:\n' + (scr ? scr.innerHTML.slice(0, 600) : 'NO SCREEN');
         document.body.appendChild(st);
       }, 7000);
+      // ดัมป์รอบสอง (หลังคัตซีน+หน้าประกาศจบ) — เช็คว่าเทิร์นเดินต่อได้จริง ไม่ค้าง
+      setTimeout(function () {
+        var st2 = document.createElement('pre');
+        st2.id = 'stateDump2';
+        st2.textContent = '=== LATE DUMP === errs=' + window.__errs.length +
+          ' turnEndedLate=' + !!window.__turnEnded +
+          ' pendingLate=' + (SC.state && SC.state.events ? !!SC.state.events.pendingDisaster : '-');
+        document.body.appendChild(st2);
+      }, 17000);
     });
   </script>
 </body>

@@ -67,8 +67,12 @@ SC.events = {
     var ev = s.events, self = this;
     var order = (s.order && s.order.length) ? s.order : ['player'];
     var pickActor = function () { return order[Math.floor(Math.random() * order.length)]; };
-    // ค้างจากรอบก่อน (เช่นเทิร์นนั้นเปิดหน้าต่างยาวจนไม่ได้ยิง) → ยกยอดมารอบนี้ สุ่มเจ้าของเทิร์นใหม่
-    if (ev.pendingDisaster) { ev.pendingDisaster.actorId = pickActor(); return; }
+    // ค้างจากรอบก่อน (เทิร์นนั้นจบก่อนถึงเวลายิง) → ยกยอดมารอบนี้ สุ่มเจ้าของเทิร์นใหม่ + นับรอบที่เลื่อน
+    if (ev.pendingDisaster) {
+      ev.pendingDisaster.actorId = pickActor();
+      ev.pendingDisaster.carried = (ev.pendingDisaster.carried || 0) + 1;
+      return;
+    }
     if (ev.disasterRounds.indexOf(s.week) < 0) return;
     var cands = SC.eventCatalog.filter(function (d) { return d.disaster && self._passesCond(d, s); });
     if (!cands.length) return;
@@ -80,6 +84,12 @@ SC.events = {
     var s = SC.state, pd = s && s.events && s.events.pendingDisaster;
     if (!pd || !actor) return null;
     return (pd.actorId === actor.id) ? SC.eventById(pd.id) : null;
+  },
+
+  // ถูกเลื่อนข้ามรอบมาแล้ว (ผู้เล่นจบเทิร์น/ข้ามดูบอทเร็วทุกครั้ง) → ท้ายรอบต้องยิงทิ้ง ห้ามหลบได้ตลอดเกม
+  overdueDisaster: function () {
+    var s = SC.state, pd = s && s.events && s.events.pendingDisaster;
+    return !!(pd && (pd.carried || 0) >= 1);
   },
 
   // ยิงจริง (apply + คัตซีน + หน้าประกาศ) — cb เรียกเมื่อประกาศปิด

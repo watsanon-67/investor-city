@@ -311,6 +311,21 @@ SC.turn._mapPhase = function (p, onDone) {
     }
 
     function endTurn() {
+      if (T.ended || T.ending) return;
+      clearTimeout(T.disTimer);
+      // ภัยพิบัติจองคิวเทิร์นนี้ไว้แต่ยังไม่ทันยิง (จบเทิร์นเร็ว/หมดเวลาก่อน) → ยิงก่อนปิดเทิร์น
+      //   ไม่งั้นกดจบเทิร์นเร็วทุกครั้ง = หลบเหตุการณ์ได้ตลอดเกม (user 2026-07-20)
+      if (SC.events && SC.events.disasterDue(p)) {
+        T.ending = true;
+        SC.windows.close(true);          // ต้องปิดหน้าต่างตึกก่อน ไม่งั้นคัตซีนโดนบัง
+        SC.world.lockMovement(true);
+        SC.events.fireDisaster(function () { T.ending = false; finishTurn(); });
+        return;
+      }
+      finishTurn();
+    }
+
+    function finishTurn() {
       if (T.ended) return; T.ended = true;
       cancelAnimationFrame(T.raf);
       clearTimeout(T.disTimer);
@@ -324,13 +339,16 @@ SC.turn._mapPhase = function (p, onDone) {
       var t = _now(), stepMs = t - T.last; T.last = t;
       // นาฬิกาเดินต่อแม้เปิดหน้าต่าง — เวลาที่ใช้อ่าน/ทำธุรกรรมนับรวมใน 60 วิ (user 2026-07-13)
       var dt = Math.min(0.05, stepMs / 1000);
-      var remain = Math.max(0, (T.endAt - t) / 1000);
-      var clk = _el('turnClock');
-      if (clk) {
-        clk.textContent = Math.ceil(remain);
-        clk.className = 'turn-clock' + (remain <= 5 ? ' danger' : '');
+      // T.ending = กำลังเล่นคัตซีนภัยพิบัติปิดท้ายเทิร์น → หยุดนับเวลา แต่แมปยังมีชีวิต
+      if (!T.ending) {
+        var remain = Math.max(0, (T.endAt - t) / 1000);
+        var clk = _el('turnClock');
+        if (clk) {
+          clk.textContent = Math.ceil(remain);
+          clk.className = 'turn-clock' + (remain <= 5 ? ' danger' : '');
+        }
+        if (remain <= 0) { endTurn(); return; } // หมดเวลา = จบทันที ธุรกรรมค้าง = ไม่เกิด
       }
-      if (remain <= 0) { endTurn(); return; } // หมดเวลา = จบทันที ธุรกรรมค้าง = ไม่เกิด
 
       SC.world.tick(dt, 'player');
       var arrived = SC.world.consumeArrival();
@@ -373,6 +391,18 @@ SC.turn.botTurn = function (bot, onDone) {
     _el('skipWatchBtn').onclick = function () { T.skip = true; };
 
     function endTurn() {
+      if (T.ended || T.ending) return;
+      clearTimeout(T.disTimer);
+      // ภัยจองคิวเทิร์นบอทนี้ไว้ แต่บอทเดินจบ/ผู้เล่นกด "ข้ามดู" ก่อน → ยิงก่อนปิดเทิร์น
+      if (SC.events && SC.events.disasterDue(bot)) {
+        T.ending = true;
+        SC.events.fireDisaster(function () { T.ending = false; closeTurn(); });
+        return;
+      }
+      closeTurn();
+    }
+
+    function closeTurn() {
       if (T.ended) return; T.ended = true;
       cancelAnimationFrame(T.raf); clearTimeout(T.disTimer); SC.world.clearBubbles();
       finishTurn();
