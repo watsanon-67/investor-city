@@ -1,0 +1,21 @@
+# ---- ไฟล์ระบบ / เครื่องมือ ----
+.DS_Store
+Thumbs.db
+desktop.ini
+__pycache__/
+*.pyc
+node_modules/
+
+# ---- ไฟล์ชั่วคราว / ผลลัพธ์ทดสอบ ----
+*.tmp
+shot_*.png
+_shot*.html
+_winshot*.html
+preview/
+scratch/
+
+# ---- อาร์ตต้นฉบับความละเอียดเต็ม ----
+# เก็บไว้นอกรีโปที่ ../assets_originals/ (ไฟล์ที่ deploy ถูกย่อให้พอดีขนาดแสดงผลแล้ว)
+assets_originals/
+assets/**/*.psd
+assets/**/*.xcf

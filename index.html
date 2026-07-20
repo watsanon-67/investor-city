@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Investor City — เกมจำลองการลงทุน + บลัฟ</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="hud" class="hud"></header>
+    <main id="screen" class="screen"></main>
+    <footer class="footer">
+      ⚠️ ข้อมูลหุ้นทั้งหมดเป็นข้อมูลจำลองเพื่อการเรียนรู้ ไม่ใช่ราคาเรียลไทม์ และไม่ใช่คำแนะนำการลงทุน
+    </footer>
+  </div>
+  <div id="toast" class="toast-area"></div>
+
+  <!-- ตัวจับ error กลาง: กันบั๊กกลายเป็นจอดำเงียบๆ — โชว์กล่องแดงพร้อม stack คลิกปิดได้ -->
+  <script>
+    (function () {
+      function showErr(msg) {
+        var box = document.getElementById('scErrBox');
+        if (!box) {
+          box = document.createElement('pre');
+          box.id = 'scErrBox';
+          box.style.cssText = 'position:fixed;left:8px;bottom:8px;right:8px;z-index:99999;max-height:40vh;overflow:auto;' +
+            'background:#4a0e0e;color:#ffd9d9;border:1px solid #a33;border-radius:8px;padding:10px 12px;' +
+            'font-size:12px;white-space:pre-wrap;cursor:pointer;';
+          box.title = 'คลิกเพื่อปิด';
+          box.onclick = function () { box.remove(); };
+          document.body.appendChild(box);
+        }
+        box.textContent += (box.textContent ? '\n----------\n' : '⚠️ เกิดข้อผิดพลาด (คลิกกล่องนี้เพื่อปิด)\n') + msg;
+      }
+      window.addEventListener('error', function (e) {
+        showErr('ERROR: ' + e.message + ' @ ' + (e.filename || '').split('/').pop() + ':' + e.lineno +
+          (e.error && e.error.stack ? '\n' + e.error.stack : ''));
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        var r = e.reason;
+        showErr('PROMISE REJECTION: ' + (r && (r.stack || r.message) ? (r.stack || r.message) : String(r)));
+      });
+    })();
+  </script>
+
+  <!-- โหลดตามลำดับ dependency (vanilla JS, ใช้ namespace SC ร่วมกัน) -->
+  <script src="js/config.js"></script>
+  <script src="js/characters.js"></script>
+  <script src="js/stocks.js"></script>
+  <script src="js/professions.js"></script>
+  <script src="js/gameState.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/bank.js"></script>
+  <script src="js/newsSys.js"></script>
+  <script src="js/markets.js"></script>
+  <script src="js/eventCatalog.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/attacks.js"></script>
+  <script src="js/botBrain.js"></script>
+  <script src="js/greenhub.js"></script>
+  <script src="js/sprite.js"></script>
+  <script src="js/designer.js"></script>
+  <script src="js/roadgrid.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/world2d.js"></script>
+  <script src="js/windows.js"></script>
+  <script src="js/turn.js"></script>
+  <script src="js/resolve.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

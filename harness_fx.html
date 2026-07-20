@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>FX Test — ดูอนิเมชันเหตุการณ์</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ---- แผงควบคุมของหน้าเทสต์ (ไม่ใช่ของเกม) ---- */
+    #fxPanel { position: fixed; left: 0; top: 0; bottom: 0; width: 310px; z-index: 3000;
+      background: rgba(10,16,26,.92); color: #e8eef7; overflow-y: auto; padding: 10px 12px 40px;
+      font: 13px/1.45 "Segoe UI", system-ui, sans-serif; border-right: 1px solid rgba(255,255,255,.12); }
+    #fxPanel h1 { font-size: 15px; margin: 2px 0 8px; }
+    #fxPanel h2 { font-size: 12px; margin: 14px 0 5px; color: #ffd9a0; letter-spacing: .04em;
+      border-bottom: 1px solid rgba(255,255,255,.14); padding-bottom: 3px; }
+    #fxPanel .row { display: flex; flex-wrap: wrap; gap: 4px; }
+    #fxPanel button { font: 12px "Segoe UI", sans-serif; padding: 4px 7px; border-radius: 6px; cursor: pointer;
+      background: #1e2c42; color: #dce7f5; border: 1px solid rgba(255,255,255,.16); }
+    #fxPanel button:hover { background: #2a3d5c; }
+    #fxPanel button.tg { background: #3a2545; border-color: #7a4f9a; }
+    #fxPanel button.on { background: #6a2320; border-color: #d0605a; }
+    #fxPanel button.big { width: 100%; padding: 6px; margin-top: 4px; background: #23492f; border-color: #4e9a68; }
+    #fxPanel .note { color: #9fb0c6; font-size: 11px; margin: 4px 0 0; }
+    #fxHide { position: fixed; left: 318px; top: 8px; z-index: 3000; }
+    body.fxoff #fxPanel { display: none; }
+    #fxGal { position: fixed; inset: 0; z-index: 4000; background: rgba(6,10,18,.94); overflow: auto;
+      padding: 20px; display: none; color: #e8eef7; font: 13px "Segoe UI", sans-serif; }
+    #fxGal.on { display: block; }
+    #fxGal .g { display: flex; flex-wrap: wrap; gap: 14px; }
+    #fxGal figure { width: 150px; margin: 0; text-align: center; background: rgba(255,255,255,.06);
+      border-radius: 8px; padding: 8px; }
+    #fxGal img { width: 100%; height: 110px; object-fit: contain; }
+    #fxGal figcaption { font-size: 11px; margin-top: 4px; color: #b9c7da; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header id="hud" class="hud" style="display:none"></header>
+    <main id="screen" class="screen"></main>
+  </div>
+  <div id="toast" class="toast-area"></div>
+
+  <button id="fxHide">☰ ซ่อน/แสดงแผง</button>
+  <div id="fxPanel"><h1>🎬 FX Test</h1><div id="fxBody">กำลังโหลด…</div></div>
+  <div id="fxGal"><button onclick="document.getElementById('fxGal').classList.remove('on')">✕ ปิด</button>
+    <h2>ไฟล์ใน assets/events/fx/ (ยังไม่ถูกใช้ในโค้ดเกม ยกเว้น meteor + impact_flash)</h2>
+    <div class="g" id="fxGalG"></div></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/characters.js"></script>
+  <script src="js/stocks.js"></script>
+  <script src="js/professions.js"></script>
+  <script src="js/gameState.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/bank.js"></script>
+  <script src="js/newsSys.js"></script>
+  <script src="js/markets.js"></script>
+  <script src="js/eventCatalog.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/attacks.js"></script>
+  <script src="js/botBrain.js"></script>
+  <script src="js/greenhub.js"></script>
+  <script src="js/sprite.js"></script>
+  <script src="js/designer.js"></script>
+  <script src="js/roadgrid.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/world2d.js"></script>
+  <script src="js/windows.js"></script>
+  <script src="js/turn.js"></script>
+  <script src="js/resolve.js"></script>
+  <!-- ไม่โหลด main.js: หน้าเมนู/พื้นหลังของเกมจะ mount world ซ้อนกับ harness (world เป็น singleton) -->
+
+  <script>
+  window.addEventListener('error', function (e) {
+    var d = document.getElementById('fxBody');
+    if (d) d.innerHTML = '<pre style="color:#ff9a9a;white-space:pre-wrap">ERROR: ' + e.message + '\n' +
+      (e.error && e.error.stack ? e.error.stack : '') + '</pre>' + d.innerHTML;
+  });
+  document.addEventListener('DOMContentLoaded', function () {
+    // ---- เตรียมเกม + แมปสดเป็นฉากหลัง (เพื่อเห็นผลบนแมป เช่น ตึกปิด) ----
+    var fxErr = function (tag, e) {
+      var d = document.getElementById('fxBody');
+      if (d) d.innerHTML = '<pre style="color:#ff9a9a;white-space:pre-wrap">' + tag + ': ' +
+        (e && (e.stack || e.message) ? (e.stack || e.message) : String(e)) + '</pre>';
+    };
+    try {
+      SC.newGame(3);
+      SC.state.week = 3;
+      SC.events.initState(SC.state);
+      SC.markets && SC.markets.ensure && SC.markets.ensure();
+    } catch (e) { fxErr('INIT', e); }
+
+    SC.world.ensure().then(function () {
+      var scr = document.getElementById('screen');
+      scr.innerHTML = '<div id="mapWrap" class="map-full" style="position:fixed;inset:0"></div>';
+      SC.world.mountInto(document.getElementById('mapWrap'));
+      SC.world.spawnActor('Char_1', { charId: 1, name: 'ทดสอบ' });
+      var last = performance.now();
+      (function loop() {
+        var now = performance.now();
+        SC.world.tick(Math.min(0.05, (now - last) / 1000), 'idle');
+        last = now;
+        requestAnimationFrame(loop);
+      })();
+      buildPanel();
+      // ?auto=<eventId> ยิงเหตุการณ์ทันที · ?closed=chart,news ปิดตึกทันที (ไว้แคปหน้าจอตรวจ)
+      var q = location.search;
+      var mc = /[?&]closed=([\w,]+)/.exec(q);
+      if (mc) mc[1].split(',').forEach(function (id) { SC.state.events.closed[id] = 2; });
+      var ma = /[?&]auto=(\w+)/.exec(q);
+      if (ma) setTimeout(function () { SC.events.debugFire(ma[1]); }, 200);
+      // ?pose=0.6&on=news,crypto&cut=meteor|hurricane|ufo — หยุดภาพคัตซีนไว้กลางทาง (ไว้แคปตรวจ)
+      var mp = /[?&]pose=([\d.]+)/.exec(q);
+      if (mp) {
+        var on = ((/[?&]on=([\w,]+)/.exec(q) || [])[1] || 'news').split(',');
+        on.forEach(function (id) { SC.state.events.closed[id] = 2; });
+        SC.state.events.lastClosedId = on[on.length - 1];
+        SC.state.events.hitTargets = on;
+        var cut = (/[?&]cut=(\w+)/.exec(q) || [])[1] || 'meteor';
+        var fn = { meteor: '_meteorCutscene', hurricane: '_hurricaneCutscene', ufo: '_ufoCutscene' }[cut];
+        SC.events[fn](null, parseFloat(mp[1]), (/[?&]side=(\w+)/.exec(q) || [])[1]);
+      }
+    }).catch(function (e) { fxErr('WORLD', e); });
+
+    document.getElementById('fxHide').onclick = function () { document.body.classList.toggle('fxoff'); };
+
+    // ---- แผงปุ่ม ----
+    function buildPanel() {
+      var tiers = { legend: '🌟 LEGEND', heavy: '🔥 HEAVY', mid: '🌤 MID', light: '🍃 LIGHT' };
+      var html = '';
+
+      html += '<h2>คัตซีน / อนิเมชันเต็ม</h2><div class="row">' +
+        '<button onclick="fxFire(\'meteor\')">☄️ อุกกาบาต (1-3 ลูก ปิดหลายตึก)</button>' +
+        '<button onclick="fxFire(\'hurricane\')">🌀 พายุหมุน (พัดผ่านหลายตึก)</button>' +
+        '<button onclick="fxFire(\'ufoAttack\')">🛸 UFO โจมตี (ดูดตึกเดียว)</button>' +
+        '<button onclick="fxBlackout()">🔦 ไฟดับ (จอมืด 30%)</button>' +
+        '<button onclick="SC.events._meteorCutscene(function(){})">▶ คัตซีนอุกกาบาตซ้ำ</button>' +
+        '<button onclick="SC.events._hurricaneCutscene(function(){})">▶ คัตซีนพายุซ้ำ</button>' +
+        '<button onclick="SC.events._ufoCutscene(function(){})">▶ คัตซีน UFO ซ้ำ</button>' +
+        '</div><p class="note">ปุ่ม ▶ ใช้ชุดตึกที่โดนล่าสุด — ยิงเหตุการณ์ก่อนหนึ่งครั้งแล้วค่อยกดเล่นซ้ำ</p>';
+
+      html += '<h2>🚧 ตึกปิดซ่อม (ดูสไปรต์บนแมป)</h2><div class="row" id="fxClose"></div>' +
+        '<p class="note">กดสลับเปิด/ปิดตึก — ตึกจะเปลี่ยนเป็นสไปรต์พัง (หรือมืดลง 45% ถ้าไม่มีไฟล์) + ควันลอย + ป้าย "ปิดซ่อม N รอบ"</p>' +
+        '<button class="big" onclick="fxClearClosed()">เปิดตึกทั้งหมดคืน</button>';
+
+      html += '<h2>🔮 การ์ดเตือนล่วงหน้า (telegraph)</h2><div class="row" id="fxTg"></div>';
+
+      // ปุ่มยิงเหตุการณ์ ไล่ตาม tier
+      ['legend', 'heavy', 'mid', 'light'].forEach(function (t) {
+        var list = SC.eventCatalog.filter(function (d) { return d.tier === t; });
+        if (!list.length) return;
+        html += '<h2>' + tiers[t] + ' (' + list.length + ')</h2><div class="row">' +
+          list.map(function (d) {
+            return '<button title="' + (d.name || '') + '" onclick="fxFire(\'' + d.id + '\')">' +
+              (d.emoji || '') + ' ' + d.id + '</button>';
+          }).join('') + '</div>';
+      });
+
+      html += '<h2>อื่นๆ</h2><button class="big" onclick="fxAll()">▶ ยิงทุกเหตุการณ์เรียงกัน</button>' +
+        '<button class="big" onclick="fxGallery()">🖼 ดู asset fx ทั้งหมด</button>' +
+        '<button class="big" onclick="location.reload()">↻ รีเซ็ตสถานะเกม</button>';
+
+      document.getElementById('fxBody').innerHTML = html;
+
+      // ปุ่มตึก (เว้น gold — ปิดไม่ได้ตามกติกา)
+      document.getElementById('fxClose').innerHTML = SC.map.city.map(function (b) {
+        return '<button data-cb="' + b.id + '" onclick="fxToggleClosed(\'' + b.id + '\',this)">' + b.id + '</button>';
+      }).join('');
+
+      // ปุ่ม telegraph เฉพาะเหตุการณ์ที่มีข้อความเตือน
+      document.getElementById('fxTg').innerHTML = SC.eventCatalog.filter(function (d) { return d.telegraph; })
+        .map(function (d) { return '<button class="tg" onclick="fxTelegraph(\'' + d.id + '\')">🔮 ' + d.id + '</button>'; }).join('');
+    }
+
+    // ---- actions ----
+    window.fxFire = function (id) { SC.events.debugFire(id); };
+
+    window.fxBlackout = function () {
+      // สลับสถานะไฟดับเพื่อดูความมืดของจอ (ผลจริงมาจาก fx mapTime ของเหตุการณ์ blackout)
+      var ev = SC.state.events, on = SC.events.isBlackout();
+      if (on) ev.active = ev.active.filter(function (e) { return !(e.kind === 'mapTime' && e.scope === 'all'); });
+      else ev.active.push({ kind: 'mapTime', sec: 30, rounds: 1, scope: 'all' });
+      SC.events.syncBlackout();
+    };
+
+    window.fxTelegraph = function (id) {
+      var def = SC.eventById(id);
+      SC.events._showAnnounce({ def: def, kind: 'telegraph' }, function () {});
+    };
+
+    window.fxToggleClosed = function (id, btn) {
+      var ev = SC.state.events;
+      if (ev.closed[id]) { delete ev.closed[id]; btn.classList.remove('on'); }
+      else { ev.closed[id] = 2; btn.classList.add('on'); }
+    };
+
+    window.fxClearClosed = function () {
+      SC.state.events.closed = {};
+      document.querySelectorAll('#fxClose button').forEach(function (b) { b.classList.remove('on'); });
+    };
+
+    window.fxAll = function () {
+      var i = 0, ids = SC.eventCatalog.map(function (d) { return d.id; });
+      (function next() {
+        if (i >= ids.length) return;
+        SC.events.debugFire(ids[i++]);
+        setTimeout(next, 5600);   // หน้าประกาศปิดเองที่ 5.2 วิ
+      })();
+    };
+
+    window.fxGallery = function () {
+      var files = ['meteor.png', 'meteor_fall_effect.png', 'impact_flash.png', 'rubble.png',
+        'smoke_1.png', 'smoke_2.png', 'smoke_3.png', 'sign_closed.png', 'blackout_glow.png',
+        'robber.png', 'robber_run.png', 'robber_startrun.png', 'pigeon.png', 'flood.png',
+        'festival.png', 'ufo.png'];
+      document.getElementById('fxGalG').innerHTML = files.map(function (f) {
+        return '<figure><img src="assets/events/fx/' + f + '" alt=""><figcaption>' + f + '</figcaption></figure>';
+      }).join('');
+      document.getElementById('fxGal').classList.add('on');
+    };
+  });
+  </script>
+</body>
+</html>

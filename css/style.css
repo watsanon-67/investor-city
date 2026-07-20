@@ -1,0 +1,1468 @@
+/* ============================================================
+   style.css — UI ทั้งหมด (ธีมเข้ม การ์ด ปุ่มใหญ่ รองรับมือถือ)
+   ============================================================ */
+:root {
+  --bg: #0e1320;
+  --bg2: #161d2e;
+  --card: #1c2435;
+  --card2: #232c42;
+  --line: #2c374f;
+  --text: #e7ecf5;
+  --muted: #8a96ad;
+  --accent: #4da3ff;
+  --accent2: #7c5cff;
+  --green: #36d399;
+  --yellow: #f7c948;
+  --red: #f76b6b;
+  --gold: #ffd24d;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 50% -10%, #1a2138, var(--bg)) fixed;
+  color: var(--text);
+  -webkit-text-size-adjust: 100%;
+}
+#app { max-width: 880px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; }
+
+/* ---------- HUD ---------- */
+.hud {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 14px; background: rgba(20,26,42,.92); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.hud:empty { display: none; }
+.hud-left { display: flex; align-items: center; gap: 8px; }
+.hud-avatar { font-size: 22px; }
+.hud-name { font-weight: 700; }
+.hud-stats { display: flex; gap: 14px; flex-wrap: wrap; flex: 1; }
+.hud-stat { display: flex; flex-direction: column; line-height: 1.1; }
+.hud-stat label { font-size: 10px; color: var(--muted); }
+.hud-stat b { font-size: 14px; }
+.hud-time { min-width: 130px; }
+.hud-time label { font-size: 10px; color: var(--muted); }
+.bar { height: 8px; background: var(--bg2); border-radius: 6px; overflow: hidden; margin-top: 3px; }
+.bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .25s; }
+
+/* ---------- layout ---------- */
+.screen { flex: 1; padding: 16px 14px 28px; }
+.footer { text-align: center; font-size: 11px; color: var(--muted); padding: 10px; border-top: 1px solid var(--line); }
+.muted { color: var(--muted); }
+.up { color: var(--green); }
+.down { color: var(--red); }
+.green { color: var(--green); }
+.yellow { color: var(--yellow); }
+.red { color: var(--red); }
+
+.phase-head { margin-bottom: 14px; }
+.phase-head h2 { font-size: 22px; }
+.phase-head p { font-size: 13px; margin-top: 4px; }
+.phase-foot { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ---------- buttons ---------- */
+.btn {
+  font: inherit; border: 1px solid var(--line); background: var(--card2); color: var(--text);
+  padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600;
+  transition: transform .05s, background .15s, border-color .15s;
+}
+.btn:hover { background: #2a3552; }
+.btn:active { transform: translateY(1px); }
+.btn-sm { padding: 7px 11px; font-size: 13px; }
+.btn-xs { padding: 4px 10px; font-size: 15px; }
+.btn-lg { padding: 14px 20px; font-size: 16px; flex: 1; min-width: 160px; }
+.btn-primary { background: linear-gradient(90deg, var(--accent), var(--accent2)); border-color: transparent; }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-go { background: linear-gradient(90deg, #2e8b57, var(--green)); border-color: transparent; color: #07261a; }
+.btn-buy { background: #18432f; border-color: #2c7a52; color: var(--green); }
+.btn-sell { background: #432020; border-color: #7a2c2c; color: var(--red); }
+.btn-bluff { background: #3a2a52; border-color: #6b4caa; color: #c9b3ff; }
+.btn-challenge { background: #4a2a10; border-color: #b5762a; color: var(--gold); width: 100%; }
+.btn-fold { background: var(--card2); }
+.btn-disabled, .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ---------- setup / character select ---------- */
+.setup { text-align: center; padding: 10px 0; }
+.logo { font-size: 40px; font-weight: 800; letter-spacing: 1px; margin: 6px 0; }
+
+/* ============================================================
+   หน้าเมนูก่อนเริ่มเกม (user 2026-07-20 — อาร์ตอ้างอิง investor_city_start /
+   game start1 / investorcity_before_start_game): พื้นหลัง = แมปสดไม่มี label
+   ============================================================ */
+.menu-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #0f1830; }
+.menu-bg canvas { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: max(100vw, 177.78vh); height: auto; }
+/* ย้อมมืดเบาๆ ให้ตัวหนังสือ/แผงอ่านง่ายบนแมป */
+.menu-bg::after { content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 38%, rgba(6,10,20,.28), rgba(6,10,20,.62)); }
+#app { position: relative; z-index: 1; }
+
+/* --- หน้า landing: โลโก้ + START --- */
+.landing { min-height: calc(100vh - 120px); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 5vh; }
+.landing-logo { width: min(700px, 88vw); filter: drop-shadow(0 12px 34px rgba(0,0,0,.55));
+  animation: logoFloat 5.5s ease-in-out infinite; }
+.btn-start { background: none; border: 0; padding: 0; cursor: pointer;
+  animation: startBob 1.7s ease-in-out infinite; }
+.btn-start img { display: block; width: min(430px, 64vw);
+  filter: drop-shadow(0 10px 28px rgba(20,80,220,.5));
+  transition: filter .18s ease, transform .18s ease; }
+.btn-start:hover img, .btn-start:focus-visible img {
+  filter: drop-shadow(0 0 16px rgba(255,255,255,.95)) drop-shadow(0 0 44px rgba(255,255,255,.6));
+  transform: scale(1.05); }
+.btn-start:active img { transform: scale(.97); }
+@keyframes logoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes startBob { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-9px) scale(1.03); } }
+
+/* --- หน้าเลือกรอบ/โหมด --- */
+.modesel { display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 8px 0 24px; text-align: center; }
+.modesel-logo { width: min(520px, 78vw); filter: drop-shadow(0 8px 22px rgba(0,0,0,.5)); }
+.menu-chip { font-weight: 800; font-size: 17px; color: #dff1ff; padding: 6px 22px;
+  background: linear-gradient(160deg, #14304e, #0c1b30); border: 1px solid #2d5f8f;
+  border-radius: 10px; box-shadow: 0 0 14px rgba(60,150,255,.25); }
+.menu-panel { background: rgba(8,15,28,.86); border: 1px solid #2d5f8f; border-radius: 16px;
+  box-shadow: 0 0 22px rgba(60,150,255,.22); backdrop-filter: blur(4px); }
+.rules-panel { width: min(660px, 94vw); padding: 6px 18px; text-align: left; }
+.rule-row { display: flex; align-items: center; gap: 14px; padding: 11px 4px; font-size: 15.5px;
+  color: #e8f1fb; border-bottom: 1px solid rgba(70,110,160,.3); }
+.rule-row:last-child { border-bottom: 0; }
+.rule-ico { font-size: 24px; width: 44px; height: 44px; flex: none; display: flex;
+  align-items: center; justify-content: center; background: rgba(30,60,100,.5);
+  border: 1px solid rgba(90,150,220,.4); border-radius: 10px; }
+.rule-row b.gold, .rule-row .gold { color: #ffd24d; }
+.modesel .count-grid { width: min(660px, 94vw); grid-template-columns: repeat(4, 1fr); }
+.custom-weeks { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center;
+  gap: 10px; font-weight: 700; }
+.custom-weeks input { width: 90px; font: inherit; font-size: 18px; font-weight: 700; text-align: center;
+  color: #fff; background: #0e1f33; border: 1px solid #2d5f8f; border-radius: 8px; padding: 10px 6px; }
+.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: min(660px, 94vw); }
+.mode-btn { display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer;
+  font: inherit; color: #fff; text-align: left; border-radius: 16px; transition: transform .15s, box-shadow .15s; }
+.mode-btn:hover { transform: translateY(-3px); }
+.mode-bot { background: linear-gradient(160deg, #123a5e, #0a1c33); border: 2px solid #3da2ff;
+  box-shadow: 0 0 18px rgba(61,162,255,.4); }
+.mode-bot:hover { box-shadow: 0 0 26px rgba(61,162,255,.7); }
+.mode-party { background: linear-gradient(160deg, #3d1b66, #1d0d38); border: 2px solid #a05ce8;
+  box-shadow: 0 0 18px rgba(160,92,232,.35); opacity: .82; }
+.mode-party:hover { box-shadow: 0 0 26px rgba(160,92,232,.6); }
+.mode-ico { font-size: 34px; }
+.mode-txt b { display: block; font-size: 20px; }
+.mode-txt small { color: #c9d8ea; font-size: 12.5px; }
+.menu-back { margin-top: 6px; opacity: .85; }
+
+/* --- หน้า setup/designer บนพื้นแมป: ไม่มีแผงพื้นน้ำเงินใหญ่ (user 2026-07-20)
+       ปล่อยกล่องย่อย (design-strip/การ์ด/ปุ่ม/.how) ลอยเป็นสี่เหลี่ยมของตัวเอง
+       ตัวหนังสือนอกกล่องใส่เงาให้อ่านออกบนแมป --- */
+.setup-logo { width: min(480px, 80vw); margin: 4px auto 2px; display: block;
+  filter: drop-shadow(0 8px 22px rgba(0,0,0,.5)); }
+.setup h3, .setup .tagline, .setup .disclaimer,
+.designer h2, .designer > p,
+.attack-phase h2, .attack-phase h3, .attack-phase .phase-head .muted,
+.reveal h3, .reveal .muted { text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 2px 10px rgba(0,0,0,.7); }
+.setup .tagline, .setup .disclaimer { color: #d5e2f0; }
+/* ฝั่งเลือกสี/ชื่อของหน้า designer = กล่องลอยของตัวเอง (เดิมตัวหนังสือลอยเปล่าๆ อ่านยากบนแมป) */
+.designer-controls { background: var(--card); border: 1px solid var(--line);
+  border-radius: 14px; padding: 14px 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-logo, .btn-start { animation: none; }
+}
+.logo span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tagline { color: var(--muted); margin-bottom: 18px; font-size: 13px; }
+.setup h3 { margin: 10px 0 12px; }
+.char-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.char-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; text-align: center; transition: border-color .15s, transform .1s; }
+.char-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.char-emoji { font-size: 40px; }
+.char-name { font-size: 18px; font-weight: 700; margin-top: 4px; }
+.char-role { color: var(--accent); font-size: 13px; margin-bottom: 8px; }
+.char-skill { font-size: 13px; min-height: 38px; }
+.char-free { font-size: 12px; color: var(--muted); margin: 8px 0 12px; }
+.char-card .btn { width: 100%; }
+.char-card.ref { cursor: default; }
+.char-card.ref:hover { border-color: var(--line); transform: none; }
+.setup-note { font-size: 12px; margin-bottom: 12px; }
+.count-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 6px; }
+.count-btn { padding: 14px; font-size: 18px; font-weight: 700; line-height: 1.3; }
+.count-btn span { font-size: 11px; font-weight: 400; display: block; margin-top: 4px; }
+.count-btn.active { border-color: var(--accent); background: #1c3550; box-shadow: 0 0 0 2px rgba(77,163,255,.4) inset; }
+
+/* ---------- character designer (🎨 ออกแบบตัวละคร) ---------- */
+.design-strip { display: flex; align-items: center; justify-content: center; gap: 18px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; margin-bottom: 8px; }
+.design-strip canvas { width: 88px; height: auto; flex: none; }
+.design-strip-info { display: flex; flex-direction: column; gap: 7px; align-items: flex-start; text-align: left; }
+.design-strip-info b { font-size: 16px; }
+.design-strip-info .muted { font-size: 12px; }
+
+.designer { max-width: 680px; margin: 0 auto; text-align: center; }
+.designer h2 { margin-bottom: 4px; }
+.designer > p { font-size: 13px; margin-bottom: 14px; }
+.designer-layout { display: flex; gap: 16px; align-items: stretch; text-align: left; }
+.designer-preview { flex: 0 0 44%; background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; padding: 12px;
+  background-image: radial-gradient(300px 160px at 50% 100%, rgba(77,163,255,.12), transparent); }
+.designer-preview canvas { width: 100%; max-width: 210px; height: auto; }
+.designer-controls { flex: 1; display: flex; flex-direction: column; gap: 11px; justify-content: center; }
+.design-row { display: flex; align-items: center; gap: 10px; }
+.design-row > label { flex: 0 0 86px; font-size: 13px; font-weight: 600; }
+.swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,.22);
+  cursor: pointer; padding: 0; transition: transform .08s, box-shadow .12s, border-color .12s; }
+.swatch:hover { transform: scale(1.15); }
+.swatch.active { border-color: #fff; box-shadow: 0 0 0 3px rgba(77,163,255,.55); }
+.dz-name { font: inherit; background: var(--bg2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 10px; flex: 1; min-width: 0; }
+.dz-name:focus { outline: none; border-color: var(--accent); }
+.design-actions { display: flex; gap: 8px; margin-top: 2px; }
+@media (max-width: 560px) {
+  .designer-layout { flex-direction: column; }
+  .designer-preview { flex: none; }
+  .designer-preview canvas { max-width: 160px; }
+}
+
+/* reveal (เฉลยอาชีพ) */
+.reveal { text-align: center; padding: 24px 0; }
+.reveal-emoji { font-size: 72px; margin: 8px 0; animation: pop .4s ease; }
+.reveal-avatar { position: relative; display: inline-block; margin: 8px 0; animation: pop .4s ease; }
+.reveal-avatar canvas { width: 150px; height: auto; display: block; }
+.reveal-emoji-badge { position: absolute; right: -14px; bottom: 6px; font-size: 34px; }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.reveal-name { font-size: 30px; font-weight: 800; }
+.reveal-role { color: var(--accent); font-size: 16px; margin-bottom: 12px; }
+.reveal-free { font-size: 14px; margin: 4px 0; }
+.reveal-free.big { background: var(--card); border: 1px solid var(--green); border-radius: 10px; padding: 10px 16px; display: inline-block; margin: 12px 0; }
+
+.how { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; margin: 20px 0; }
+.how h4 { margin-bottom: 8px; }
+.how ol { padding-left: 18px; font-size: 13px; line-height: 1.7; }
+.disclaimer { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+/* ---------- city map (explore) ---------- */
+.city-map { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; text-align: center; position: relative; }
+.tile-emoji { font-size: 34px; }
+.tile-name { font-weight: 700; margin-top: 4px; }
+.tile-desc { font-size: 12px; color: var(--muted); }
+.tile-cost { font-size: 11px; color: var(--muted); margin: 6px 0; }
+.tile-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.tile-free { border-color: var(--green); }
+.tile-done { border-color: var(--accent); opacity: .85; }
+.tile-bluffed { border-color: var(--accent2); }
+.tile-tooexpensive { opacity: .7; }
+.tag { display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 20px; margin-top: 6px; }
+.tag-free { background: #143a2b; color: var(--green); }
+.tag-done { background: #15314f; color: var(--accent); }
+.tag-bluff { background: #2e2150; color: #c9b3ff; }
+
+.risk-box { margin: 14px 0; padding: 10px 14px; background: #2a1f12; border: 1px solid #6b4f2a; border-radius: 10px; font-size: 13px; }
+
+/* ---------- info table ---------- */
+.info-section { margin-top: 18px; }
+.info-section h3 { margin-bottom: 8px; }
+.table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+.info-table, .resolve-table, .leaderboard { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--card); }
+.info-table th, .info-table td, .resolve-table th, .resolve-table td, .leaderboard th, .leaderboard td {
+  padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap;
+}
+.info-table th { background: var(--card2); font-size: 12px; }
+.info-table td.locked, .info-table th.locked { color: var(--muted); background: rgba(0,0,0,.15); }
+.stock-name { white-space: nowrap; }
+
+/* ---------- showdown / bots ---------- */
+.survived-box { margin: 8px 0 14px; padding: 10px 14px; background: #123226; border: 1px solid #2c7a52; border-radius: 10px; font-size: 14px; }
+.bot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.bot-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.bot-card-head { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.bot-emoji { font-size: 30px; }
+.susp { margin: 8px 0; }
+.susp-bar { height: 10px; background: var(--bg2); border-radius: 6px; overflow: hidden; }
+.susp-fill { height: 100%; transition: width .3s; }
+.susp-fill.green { background: var(--green); }
+.susp-fill.yellow { background: var(--yellow); }
+.susp-fill.red { background: var(--red); }
+.susp-text { font-size: 12px; font-weight: 600; }
+.tell-label { font-size: 12px; color: var(--muted); margin-top: 8px; }
+.tell-list { list-style: none; font-size: 13px; margin: 4px 0 10px; }
+.tell-list li { padding: 2px 0 2px 16px; position: relative; }
+.tell-list li:before { content: "•"; position: absolute; left: 2px; color: var(--accent2); }
+.challenge-result { text-align: center; font-weight: 700; padding: 8px; border-radius: 8px; }
+.challenge-result.good { background: #123226; color: var(--green); }
+.challenge-result.bad { background: #331818; color: var(--red); }
+
+/* ---------- decide (trade) ---------- */
+.decide-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.decide-head h2 { margin: 0; }
+.decide-head p { width: 100%; }
+.clock {
+  font-size: 30px; font-weight: 800; width: 58px; height: 58px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--card2); border: 3px solid var(--accent); color: var(--accent);
+}
+.clock.danger { border-color: var(--red); color: var(--red); animation: pulse .5s infinite alternate; }
+@keyframes pulse { to { transform: scale(1.12); } }
+
+.trade-list { display: flex; flex-direction: column; gap: 10px; }
+.trade-row { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.trade-main { flex: 1; min-width: 180px; }
+.trade-top { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.trade-sym { font-size: 16px; }
+.trade-price { color: var(--gold); font-weight: 700; }
+.trade-have { font-size: 12px; color: var(--muted); }
+.trade-hints { margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; }
+.hint { font-size: 11px; background: var(--bg2); padding: 3px 8px; border-radius: 6px; }
+.trade-actions { display: flex; gap: 8px; align-items: center; }
+.qty { display: flex; align-items: center; gap: 6px; background: var(--bg2); border-radius: 8px; padding: 2px 4px; }
+.qty-num { min-width: 26px; text-align: center; font-weight: 700; }
+
+/* ---------- resolve ---------- */
+.resolve-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 16px; }
+.sum-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.sum-card label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+.sum-card b { font-size: 18px; }
+
+/* ---------- end / leaderboard ---------- */
+.endscreen { text-align: center; }
+.endscreen h2 { font-size: 28px; margin-bottom: 6px; }
+.endscreen.gameover h2 { color: var(--red); }
+.leaderboard { margin: 16px 0; }
+.leaderboard th { background: var(--card2); }
+.leaderboard tr.me { background: #15314f; font-weight: 700; }
+.susp-recap { max-width: 360px; margin: 12px auto; }
+
+/* ---------- turn screen (แมปเดินได้) ---------- */
+.turnbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.turn-profile { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; flex: 1; }
+.tp-emoji { font-size: 30px; }
+.tp-name { font-weight: 700; font-size: 15px; }
+.tp-sub { font-size: 12px; color: var(--muted); }
+.susp-mini { margin-top: 4px; max-width: 220px; }
+.turn-clock {
+  font-size: 26px; font-weight: 800; min-width: 60px; height: 60px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--card2); border: 3px solid var(--accent); color: var(--accent); padding: 0 10px;
+}
+.turn-clock.danger { border-color: var(--red); color: var(--red); animation: pulse .5s infinite alternate; }
+
+.map-wrap { position: relative; width: 100%; min-height: 200px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: #0f1830; }
+.map-wrap canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: pointer; }
+
+/* ปุ่มเครื่องมือแมป (เต็มจอ / ปรับตำแหน่ง) */
+.map-tools { position: absolute; top: 8px; right: 8px; z-index: 6; display: flex; gap: 6px; }
+.map-tool { background: rgba(14,22,38,.82); color: #eaf1fb; border: 1px solid var(--line);
+  border-radius: 9px; padding: 6px 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.map-tool:hover { background: rgba(30,42,66,.95); }
+
+/* โหมดเต็มจอ: แมปเต็มหน้าจอ คงสัดส่วน */
+.map-wrap:fullscreen, .map-wrap:-webkit-full-screen {
+  width: 100vw; height: 100vh; border-radius: 0; border: 0;
+  display: flex; align-items: center; justify-content: center; background: #0f1830; }
+.map-wrap:fullscreen canvas, .map-wrap:-webkit-full-screen canvas {
+  width: max(100vw, 177.78vh); height: auto; max-width: none; }
+
+/* ---------- โหมดเล่นเต็มหน้าจอ (หน้าเทิร์น): แมปคือทั้งหน้าจอ UI ลอยทับบนแมป ----------
+   canvas ขยายแบบ cover คงสัดส่วน 16:9 (สเกล element ทั้งก้อน — พิกัดคลิกจาก
+   getBoundingClientRect ยังตรง) · จอที่ไม่ใช่ 16:9 ขอบภาพโดน crop เล็กน้อย */
+.map-full { position: fixed; inset: 0; z-index: 15; border: 0; border-radius: 0; min-height: 0; background: #0f1830; }
+.map-full canvas { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: max(100vw, 177.78vh); height: auto; }
+/* แถวบน: โปรไฟล์เทิร์นซ้าย · เครื่องมือ+นาฬิกาขวา */
+.ov-top { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 6;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; pointer-events: none; }
+.ov-top > *, .ov-bottom > * { pointer-events: auto; }
+.map-full .turn-profile { flex: none; max-width: min(440px, 62vw);
+  background: rgba(9,16,30,.8); border-color: rgba(120,150,200,.4);
+  box-shadow: 0 4px 16px rgba(0,0,0,.5); backdrop-filter: blur(6px); }
+.ov-topright { display: flex; gap: 8px; align-items: flex-start; }
+.map-full .turn-clock { background: rgba(9,16,30,.8); backdrop-filter: blur(6px);
+  box-shadow: 0 4px 16px rgba(0,0,0,.5); }
+/* แถวล่าง: กล่องข้อมูล (hint/สัญญาณ) ซ้าย · ปุ่มแอ็กชันขวา */
+.ov-bottom { position: absolute; left: 10px; right: 10px; bottom: 12px; z-index: 6;
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; pointer-events: none; }
+.ov-info { max-width: 46%; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+/* .ov-actions ตอนนี้เป็นคอลัมน์: แผงการ์ดของฉัน (ov-mycards) ลอยเหนือแถวปุ่ม (ov-actions-row) */
+.ov-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-left: auto; flex: none; }
+.ov-actions-row { display: flex; gap: 10px; }
+.ov-actions .btn { box-shadow: 0 6px 18px rgba(0,0,0,.55); }
+.ov-actions .btn-challenge { width: auto; }
+.map-full .turn-hint { margin: 0; background: rgba(9,16,30,.74); border-color: rgba(120,150,200,.3);
+  backdrop-filter: blur(6px); }
+.map-full .tell-record { margin: 0; background: rgba(9,16,30,.74); border: 1px solid rgba(120,150,200,.3);
+  border-radius: 10px; padding: 8px 12px; backdrop-filter: blur(6px); max-height: 30vh; overflow: auto; }
+
+/* บับเบิล tell (HTML overlay ลอยเหนือหัวตัวละคร) */
+.bubble-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 2; }
+.bubble3d { position: absolute; transform: translate(-50%, -100%); white-space: nowrap;
+  background: rgba(124,92,255,.96); color: #0e1320; font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 9px; box-shadow: 0 4px 12px rgba(0,0,0,.4); animation: bubpop .2s ease; }
+.bubble3d:after { content: ''; position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: rgba(124,92,255,.96); border-bottom: 0; }
+@keyframes bubpop { from { transform: translate(-50%, -90%) scale(.7); opacity: 0; } }
+
+/* (แถบกำลังอ่านถูกถอดออก — ระบบเวลาอ่านเอาออกแล้ว 2026-07-05) */
+
+/* โหลดโลก 3D */
+.loading3d { text-align: center; padding: 60px 20px; }
+.loading3d.err { color: var(--red); }
+.loading3d code { background: var(--card2); padding: 2px 6px; border-radius: 5px; color: var(--accent); }
+.spinner { width: 48px; height: 48px; margin: 0 auto 16px; border: 5px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* (popup อ่าน/บลัฟเดิมถูกแทนด้วย "หน้าต่างตึก" — ดูส่วน windows ท้ายไฟล์) */
+
+.turn-hint { font-size: 12px; color: var(--muted); margin: 10px 0; padding: 8px 12px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+.tell-record { margin-top: 10px; font-size: 13px; }
+.tell-record ul { list-style: none; margin-top: 6px; min-height: 24px; }
+.tell-record li { padding: 3px 0 3px 18px; position: relative; }
+.tell-record li:before { content: "🎭"; position: absolute; left: 0; }
+
+/* ---------- toast ---------- */
+.toast-area { position: fixed; bottom: 16px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; z-index: 50; }
+.toast { background: var(--card2); border: 1px solid var(--line); color: var(--text); padding: 10px 16px; border-radius: 10px;
+  font-size: 13px; opacity: 0; transform: translateY(12px); transition: opacity .25s, transform .25s; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.good { border-color: var(--green); }
+.toast.bad { border-color: var(--red); }
+.toast.warn { border-color: var(--yellow); }
+
+@media (max-width: 520px) {
+  .hud-stats { gap: 10px; }
+  .phase-head h2 { font-size: 20px; }
+  .btn-lg { min-width: 100%; }
+}
+
+/* ============================================================
+   หน้าต่างตึก (js/windows.js) — คลิกตึกแล้วเด้งขึ้นทับทั้งจอ
+   ฉากหลัง = เกมเดิมย้อมสีน้ำเงิน + เบลอ (ตามตัวอย่าง assets/windows/stock city ex.png)
+   กรอบ Stock Market ใช้รูป stock_market_frame.png · 1em = 1% ความกว้างกรอบ (JS เซ็ต font-size)
+   ============================================================ */
+.win-overlay { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center;
+  background: rgba(10,24,52,.55); backdrop-filter: blur(5px) saturate(.72) brightness(.8);
+  -webkit-backdrop-filter: blur(5px) saturate(.72) brightness(.8); animation: winfade .16s ease; }
+@keyframes winfade { from { opacity: 0; } }
+.win-frame { position: relative; animation: winpop .2s ease; font-family: "Bahnschrift", "Segoe UI", "Noto Sans Thai", sans-serif; }
+@keyframes winpop { from { transform: scale(.93); opacity: .3; } }
+.win-frame, .win-frame * { box-sizing: border-box; }
+.win-frame.win-stock { background: url('../assets/windows/stock_market_frame.png') no-repeat center / 100% 100%;
+  filter: drop-shadow(0 1.2em 2.5em rgba(0,0,0,.55)); }
+
+/* ---- ปุ่มปิด (hitbox โปร่งใสทับปุ่ม X ที่วาดในรูป) ---- */
+.wf-x { position: absolute; left: 92.6%; top: 5%; width: 8%; height: 14%;
+  background: none; border: 0; cursor: pointer; border-radius: 50%; }
+.wf-x:hover { filter: drop-shadow(0 0 .6em rgba(255,120,90,.9)); background: radial-gradient(circle, rgba(255,140,100,.22), transparent 70%); }
+
+/* ---- แท็บ (วางทับแถบแท็บเดิมที่ wipe ทิ้งแล้ว) ---- */
+.wf-tabs { position: absolute; left: 28.4%; top: 17.1%; height: 6.5%; display: flex; gap: .9em; align-items: stretch; }
+.wf-tab { font: inherit; font-size: 1.32em; font-weight: 800; letter-spacing: .05em; cursor: pointer;
+  color: #b8cadd; background: linear-gradient(#1d3348, #101f30); border: .16em solid #3a566f;
+  border-radius: .55em; padding: 0 1.5em; text-shadow: 0 1px 2px rgba(0,0,0,.6); white-space: nowrap; }
+.wf-tab:hover { color: #eaf4ff; border-color: #5b7d99; }
+.wf-tab.active { color: #fff; background: linear-gradient(#46b654, #1e7c2e); border-color: #ffd24d;
+  box-shadow: 0 0 .7em rgba(70,190,90,.55), inset 0 .15em .3em rgba(255,255,255,.25); }
+
+/* ---- แผงซ้าย/ขวา + แถบล่าง (ตำแหน่ง % ในกรอบ) ---- */
+/* font-size ต่อบาน = ขยายตัวอักษรให้ใกล้ขนาดตัวการ์ดตอนซูมที่สุดเท่าที่กรอบรับได้ (user 2026-07-19 —
+   เป้าจริง ~2.4em เท่า bullet การ์ด ใส่แล้วเลย์เอาต์แตกทุกบาน จึงใช้ค่าสูงสุดที่แต่ละบานไม่ล้น/ไม่ตัดปุ่ม
+   ตรวจ headless ทีละบานแล้ว: stock 1.25 · crypto 1.5 · bond 1.35 · gold 1.7 · fin 1.6 · news 1.38
+   · realestate 1.3 · startup 1.38 · green 1.6 · leaderboard 1.5) */
+.wf-left, .wf-right { position: absolute; top: 25%; bottom: 13.8%; display: flex; flex-direction: column; gap: .55em;
+  background: rgba(13,33,50,.5); border: .13em solid #23485f; border-radius: .8em; padding: .9em 1em .8em;
+  font-size: 1.25em; }
+.wf-left { left: 3.4%; width: 29%; }
+.wf-right { left: 33.8%; right: 3.4%; }
+.wf-foot { position: absolute; left: 3.4%; right: 3.4%; top: 87.6%; height: 8%;
+  display: flex; align-items: center; gap: 1em; font-size: 1.25em; }
+
+.wp-title { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: .6em;
+  font-size: 1.28em; font-weight: 800; letter-spacing: .06em; color: #eaf4ff; flex: none; }
+.wp-title .wp-sub { font-size: .74em; font-weight: 400; color: #9fb4c8; letter-spacing: 0; min-width: 0; }
+.wp-title .wa-live, .wp-title .su-ap, .wp-title .gv-lv { flex: none; }
+/* แถบเลื่อนในหน้าต่าง: เส้นบางสีจาง (ไม่ใช่แถบขาวระบบ) */
+.win-frame *::-webkit-scrollbar { width: .55em; height: .55em; }
+.win-frame *::-webkit-scrollbar-track { background: transparent; }
+.win-frame *::-webkit-scrollbar-thumb { background: rgba(160,190,220,.28); border-radius: .3em; }
+.win-frame *::-webkit-scrollbar-thumb:hover { background: rgba(160,190,220,.45); }
+.win-frame * { scrollbar-width: thin; scrollbar-color: rgba(160,190,220,.3) transparent; }
+
+/* ---- แผง MARKET OVERVIEW ---- */
+.ov-index { display: flex; align-items: center; gap: .7em; flex: none; margin-top: .2em; }
+.ov-chip { font-size: .95em; font-weight: 700; color: #cfe2f2; background: #0d2233; border: .1em solid #2b4d66;
+  border-radius: .4em; padding: .25em .7em; white-space: nowrap; }
+.ov-val { font-size: 1.9em; font-weight: 800; color: #eaf4ff; line-height: 1; }
+.ov-chg { font-size: .98em; color: #8fa8bf; flex: none; }
+.ov-chart { flex: 1 1 auto; min-height: 0; background: rgba(6,18,28,.65); border: .1em solid #1c3a4f;
+  border-radius: .6em; padding: .4em; }
+.ov-chart canvas { width: 100%; height: 100%; display: block; }
+.ov-note { flex: none; font-size: .96em; color: #9fb4c8; min-height: 1.4em; }
+.ov-stats { flex: none; display: flex; gap: .6em; }
+.ov-stat { flex: 1; background: rgba(9,25,38,.75); border: .1em solid #1c3a4f; border-radius: .55em;
+  padding: .45em .3em; text-align: center; }
+.ov-stat label { display: block; font-size: .8em; letter-spacing: .08em; color: #8fa8bf; margin-bottom: .15em; }
+.ov-stat b { font-size: 1.12em; color: #eaf4ff; }
+
+/* ---- ตาราง STOCK LIST / HOLDINGS ---- */
+.wf-tablewrap { flex: 1 1 auto; min-height: 0; overflow: auto; border-radius: .5em; }
+.wf-table { width: 100%; border-collapse: collapse; font-size: 1.12em; }
+.wf-table th { position: sticky; top: 0; background: #0d2233; color: #ffd24d; font-size: .86em; letter-spacing: .07em;
+  text-align: left; padding: .5em .55em; border-bottom: .12em solid #2b4d66; white-space: nowrap; z-index: 1; }
+.wf-table td { padding: .52em .55em; border-bottom: 1px solid rgba(43,77,102,.45); color: #dbe8f4; white-space: nowrap; }
+.wf-table td.num { font-weight: 700; font-variant-numeric: tabular-nums; }
+.wf-table tbody tr { cursor: pointer; }
+.wf-table tbody tr:hover { background: rgba(35,72,95,.3); }
+.wf-table tbody tr.sel { background: rgba(35,72,95,.5); box-shadow: inset .25em 0 0 #ffd24d; }
+.st-co { display: flex; align-items: center; gap: .55em; }
+.st-ico { width: 2.3em; height: 2.3em; border-radius: .45em; display: flex; align-items: center; justify-content: center;
+  font-size: 1.15em; box-shadow: inset 0 -0.35em .5em rgba(0,0,0,.35), inset 0 .15em .25em rgba(255,255,255,.25); flex: none; }
+.st-nm { display: flex; flex-direction: column; line-height: 1.15; }
+.st-nm b { font-size: 1.02em; color: #fff; }
+.st-nm small { font-size: .82em; color: #9fb4c8; }
+
+/* stepper จำนวนหุ้น */
+.qty2 { display: inline-flex; align-items: center; background: #0a1a28; border: .1em solid #2b4d66; border-radius: .45em; overflow: hidden; }
+.qty2 button { width: 2.05em; height: 2.05em; background: #17334a; color: #dbe8f4; border: 0; font-size: 1em;
+  font-weight: 800; cursor: pointer; line-height: 1; }
+.qty2 button:hover { background: #23485f; }
+.q2v { min-width: 2.6em; text-align: center; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
+
+/* ปุ่ม BUY/SELL */
+.buy2 { font: inherit; font-size: 1em; font-weight: 800; letter-spacing: .05em; color: #fff; cursor: pointer;
+  background: linear-gradient(#46b654, #1e7c2e); border: .12em solid #9fe08f; border-radius: .45em;
+  padding: .42em 1.2em; text-shadow: 0 1px 2px rgba(0,0,0,.5); box-shadow: 0 .18em .4em rgba(0,0,0,.35); }
+.buy2:hover { filter: brightness(1.12); }
+.buy2:active { transform: translateY(.08em); }
+.buy2.sellmode { background: linear-gradient(#e0604e, #a02b22); border-color: #f0a896; }
+
+/* ---- แถบล่าง ---- */
+.wf-status { display: flex; align-items: center; gap: .45em; font-size: 1.02em; font-weight: 700; color: #cfe2f2; }
+.wf-status .dot { width: .7em; height: .7em; border-radius: 50%; background: #35d07f; box-shadow: 0 0 .5em #35d07f; }
+.wf-status small { display: block; font-size: .84em; font-weight: 400; color: #9fb4c8; margin-left: .5em; }
+.wf-btn { font: inherit; font-size: 1.05em; font-weight: 800; letter-spacing: .04em; color: #fff; cursor: pointer;
+  background: linear-gradient(#2f7fe0, #1c4fa0); border: .12em solid #7db4f0; border-radius: .5em;
+  padding: .5em 1.4em; text-shadow: 0 1px 2px rgba(0,0,0,.5); white-space: nowrap; }
+.wf-btn:hover { filter: brightness(1.12); }
+.wf-cash { margin-left: auto; display: flex; align-items: center; gap: .5em; font-size: 1.05em; }
+.wf-cashcol { display: flex; flex-direction: column; line-height: 1.15; }
+.wf-cashcol label { font-size: .76em; letter-spacing: .08em; color: #ffd24d; font-weight: 700; }
+.wf-cashcol b { font-size: 1.25em; color: #7ef598; }
+.wf-plus { width: 2.2em; height: 2.2em; font-size: 1.1em; font-weight: 900; color: #fff; cursor: pointer;
+  background: linear-gradient(#46b654, #1e7c2e); border: .12em solid #9fe08f; border-radius: .45em; }
+.wf-plus:hover { filter: brightness(1.15); }
+
+/* ---- พอร์ต: โดนัท + legend + แถบสัดส่วน ---- */
+.pf-donut { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.pf-donut canvas { height: 96%; aspect-ratio: 1; max-width: 100%; }
+.pf-legend { flex: none; display: flex; flex-direction: column; gap: .22em; max-height: 32%; overflow: auto; }
+.pf-leg { display: flex; align-items: center; gap: .5em; font-size: .95em; color: #dbe8f4; }
+.pf-leg i { width: .95em; height: .95em; border-radius: .25em; flex: none; }
+.pf-leg b { margin-left: auto; font-variant-numeric: tabular-nums; }
+.pf-empty { text-align: center; color: #8fa8bf; padding: 2em 1em !important; white-space: normal !important; }
+.wbar { width: 5.2em; height: .8em; background: rgba(10,26,40,.9); border-radius: .4em; overflow: hidden; display: inline-block; vertical-align: middle; }
+.wbar i { display: block; height: 100%; border-radius: .4em; }
+.wpct { color: #8fa8bf; margin-left: .4em; font-size: .85em; }
+
+/* ---- หน้าต่าง generic (ตึกอื่นๆ ที่ยังไม่มี asset กรอบของตัวเอง) ---- */
+.win-frame.win-generic { background: linear-gradient(180deg, #0c2231, #060f17);
+  border: .16em solid #b7893a; border-radius: .85em;
+  box-shadow: 0 1em 2.6em rgba(0,0,0,.55), inset 0 0 2.2em rgba(0,0,0,.4); }
+.wg-banner { position: absolute; top: -1.05em; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(#3ea94c, #1e7c2e); border: .12em solid #ffd24d; border-radius: .5em;
+  padding: .3em 1.4em; font-size: 1.32em; font-weight: 800; letter-spacing: .04em; color: #fff;
+  text-shadow: 0 .06em .12em rgba(0,0,0,.5); white-space: nowrap; box-shadow: 0 .25em .7em rgba(0,0,0,.45); }
+.wg-x { position: absolute; right: -.8em; top: -.9em; width: 2.4em; height: 2.4em; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ef6a52, #8e1f14); border: .14em solid #ffd24d;
+  color: #ffe9c9; font-size: 1.15em; font-weight: 900; cursor: pointer; box-shadow: 0 .25em .8em rgba(0,0,0,.5); }
+.wg-x:hover { filter: brightness(1.2); }
+.wg-body { position: absolute; inset: 3.2em 1.6em 1.4em; overflow: auto; }
+.wg-desc { color: #cfe2f2; font-size: 1.1em; margin-bottom: .9em; }
+.wg-table td { white-space: normal; }
+.wg-asset { text-align: center; padding-top: .5em; }
+.wg-asset-emoji { font-size: 4em; line-height: 1.2; }
+.wg-rows { display: flex; gap: .8em; justify-content: center; margin: 1em 0; }
+.wg-rows > div { background: rgba(13,33,50,.6); border: .1em solid #23485f; border-radius: .6em; padding: .6em 1.2em; }
+.wg-rows label { display: block; font-size: .8em; color: #8fa8bf; margin-bottom: .2em; }
+.wg-rows b { font-size: 1.15em; color: #eaf4ff; }
+.wg-risk i { display: inline-block; width: .55em; height: 1em; margin-right: .18em; border-radius: .15em;
+  background: #1c3a4f; }
+.wg-risk i.on { background: linear-gradient(#ffb84d, #e0604e); }
+.wg-soon { color: #8fa8bf; font-size: .95em; background: rgba(9,25,38,.7); border: 1px dashed #2b4d66;
+  border-radius: .5em; padding: .6em; display: inline-block; }
+.win-generic .leaderboard { font-size: 1.05em; }
+
+/* ============================================================
+   หน้าต่างตึกสินทรัพย์ 6 ตึก (กรอบจาก assets/windows/frames/ — tools/make_asset_windows.py)
+   เลย์เอาต์เป็น % ของกรอบ · 1em = 1% ความกว้างกรอบ (windows.js เซ็ต font-size)
+   ============================================================ */
+.win-frame.win-asset { background-repeat: no-repeat; background-position: center; background-size: 100% 100%; color: #dbe8f4; }
+.win-as-crypto     { background-image: url('../assets/windows/frames/crypto_frame.png');     --waline: #5b3fa8; }
+.win-as-bond       { background-image: url('../assets/windows/frames/bond_frame.png');       --waline: #3f7a52; }
+.win-as-realestate { background-image: url('../assets/windows/frames/realestate_frame.png'); --waline: #33557f; }
+.win-as-gold       { background-image: url('../assets/windows/frames/gold_frame.png');       --waline: #7a6524; }
+.win-as-startup    { background-image: url('../assets/windows/frames/startup_frame.png');    --waline: #2c4d6e; }
+.win-as-green      { background-image: url('../assets/windows/frames/green_frame.png');      --waline: #2e6b45; }
+.win-as-fin        { background-image: url('../assets/windows/frames/bank_frame.png');        --waline: #8a6d2a; }
+.win-as-news       { background-image: url('../assets/windows/frames/news_frame.png');        --waline: #3e6d74; }
+.win-as-leaderboard{ background-image: url('../assets/windows/frames/leaderboard_frame.png'); --waline: #3f7a52; }
+
+/* ปุ่ม X = อาร์ตในกรอบ → hotspot โปร่งใสทับ (ตำแหน่งวัดจากภาพ crop) */
+.wa-x { position: absolute; background: transparent; border: none; cursor: pointer; border-radius: 50%; }
+.wa-x:hover { background: radial-gradient(circle, rgba(255,140,100,.25), transparent 70%);
+  filter: drop-shadow(0 0 .5em rgba(255,120,90,.8)); }
+.win-as-crypto     .wa-x { left: 93.6%; top: 14.2%; width: 5.6%; height: 8.2%; }
+.win-as-bond       .wa-x { left: 93.2%; top: 10.4%; width: 5.6%; height: 8.6%; }
+/* อาร์ตใหม่ 2026-07-15 — วัดจากภาพ crop: green c(95.7,13.2)% · realestate c(95.6,13.2)% · startup c(94.3,11.7)% */
+.win-as-realestate .wa-x { left: 93.5%; top: 10.2%; width: 4.2%; height: 6.2%; }
+.win-as-gold       .wa-x { left: 93.1%; top: 1.8%;  width: 5.8%; height: 8.2%; }
+.win-as-startup    .wa-x { left: 91.9%; top: 8.1%;  width: 4.8%; height: 7.2%; }
+.win-as-green      .wa-x { left: 93.4%; top: 9.9%;  width: 4.6%; height: 6.6%; }
+.win-as-fin        .wa-x { left: 92.6%; top: 13.2%; width: 5.6%; height: 8.4%; }
+/* กรอบที่ไม่มีปุ่ม X ในอาร์ต → วาดปุ่มเองด้วย CSS (news ตามตัวอย่าง = แคปซูลแดงกลางล่าง) */
+.wa-x-drawn { display: flex; align-items: center; justify-content: center; font: inherit;
+  font-size: 1.6em; font-weight: 900; color: #ffe37a; text-shadow: 0 .08em .15em rgba(0,0,0,.7);
+  background: linear-gradient(180deg, #d8443a, #8e1f18); border: .1em solid #e8b83a; border-radius: 2em;
+  box-shadow: 0 .15em .4em rgba(0,0,0,.55), inset 0 .1em .25em rgba(255,220,180,.35); }
+.wa-x-drawn:hover { filter: brightness(1.2); background: linear-gradient(180deg, #e85a4e, #a52a20); }
+.win-as-news        .wa-x-news { left: 45.5%; top: 90.4%; width: 9%; height: 7.6%; }
+.win-as-leaderboard .wa-x-lb   { left: 89.2%; top: 12.6%; width: 5.6%; height: 7.6%; border-radius: 50%; }
+
+/* พื้นที่เนื้อหา (โซนที่ wipe เป็นพื้นเรียบ) */
+.wa-body { position: absolute; display: flex; flex-direction: column; gap: .55em; }
+/* font-size ต่อบาน = สเกลตัวอักษรรวมของเนื้อหา (user 2026-07-16 ขอใหญ่อ่านง่ายทุกบาน — จูนต่อบานกันเนื้อหาล้นกรอบ) */
+.win-as-crypto     .wa-body { left: 3.6%;  right: 3.6%;  top: 23.2%; bottom: 3.6%; font-size: 1.35em; } /* 1.5 ทำตารางทะลุขอบขวากรอบ (user 2026-07-20) */
+.win-as-bond       .wa-body { left: 3.6%;  right: 3.2%;  top: 20.5%; bottom: 4.6%; }
+/* กรอบใหม่ 2026-07-15: ช่องเปิดในกรอบวัดจริง (ดู interior_region ใน make_asset_windows.py)
+   green x 6.7..92.8% y 21.3..91.9% · realestate x 7.4..92.5% y 17.9..91.3% · startup x 7.4..92.4% y 18.0..89.9%
+   → เว้นขอบใน ~1.3% กันเนื้อหาชนเส้นขอบกรอบ */
+.win-as-realestate .wa-body { left: 8.7%;  right: 8.8%;  top: 19.3%; bottom: 10.0%; font-size: 1.3em; }
+.win-as-gold       .wa-body { left: 4.0%;  right: 3.0%;  top: 13.6%; bottom: 3.2%; display: block; }
+.win-as-startup    .wa-body { left: 8.7%;  right: 8.9%;  top: 19.4%; bottom: 11.4%; font-size: 1.38em; }
+.win-as-green      .wa-body { left: 8.0%;  right: 8.5%;  top: 22.6%; bottom: 9.4%; font-size: 1.6em; }
+.win-as-fin        .wa-body { left: 5.5%;  right: 5.5%;  top: 24.5%; bottom: 6.5%; font-size: 1.6em; }
+.win-as-news       .wa-body { left: 8%;    right: 8%;    top: 18.8%; bottom: 10.8%; font-size: 1.38em; }
+.win-as-leaderboard .wa-body{ left: 8%;    right: 8%;    top: 21%;   bottom: 9%; font-size: 1.5em; }
+
+/* ชิ้นส่วนร่วม */
+.wa-tabs { display: flex; gap: .8em; flex: none; }
+.wa-tab { font: inherit; font-size: 1.25em; font-weight: 800; letter-spacing: .05em; cursor: pointer;
+  color: #b9cadb; background: rgba(0,0,0,.35); border: .1em solid var(--waline); border-radius: .5em; padding: .28em 1.1em; }
+.wa-tab:hover { color: #fff; }
+.wa-tab.active { color: #fff; background: linear-gradient(#46b654, #1e7c2e); border-color: #ffd24d;
+  box-shadow: 0 0 .8em rgba(70,182,84,.5); }
+.wa-main { flex: 1 1 auto; min-height: 0; display: flex; }
+.wa-cols { display: flex; gap: .9em; width: 100%; min-height: 0; flex: 1 1 auto; }
+.wa-p { background: rgba(3,10,18,.42); border: .1em solid var(--waline); border-radius: .8em; padding: .75em .9em; }
+.wa-left  { width: 30%; flex: none; display: flex; flex-direction: column; gap: .5em; min-height: 0; overflow: auto; }
+.wa-right { flex: 1; display: flex; flex-direction: column; gap: .5em; min-height: 0; min-width: 0; }
+.wa-lab { font-size: .92em; letter-spacing: .08em; color: #ffd24d; font-weight: 700; }
+.wa-big { font-size: 2.1em; color: #eaf4ff; line-height: 1.15; }
+.wa-sub { font-size: 1em; color: #9fb4c8; }
+.wa-live { color: #35d07f; font-size: .72em; margin-left: .5em; }
+.wa-note { color: #9fb4c8; font-size: .96em; }
+.wa-chart { flex: 1 1 auto; min-height: 6em; }
+.wa-chart canvas, .gv-chart canvas, .re-trend canvas, .su-donut canvas { width: 100%; height: 100%; display: block; }
+.wa-foot { flex: none; display: flex; align-items: center; gap: 1.1em; padding-top: .3em; }
+.wa-senti label { display: block; font-size: .8em; letter-spacing: .07em; color: #9fb4c8; margin-bottom: .25em; }
+.wa-sentibar { height: .8em; background: rgba(0,0,0,.5); border-radius: .4em; overflow: hidden; margin-bottom: .25em; }
+.wa-sentibar i { display: block; height: 100%; background: linear-gradient(90deg, #35d07f, #7ef598); border-radius: .4em; }
+.win-asset .wf-table th { background: rgba(0,0,0,.5); }
+.win-asset .wf-tablewrap { flex: 1 1 auto; }
+
+/* ---------- Gold Vault ---------- */
+.win-as-gold .wa-body { font-size: 1.7em; } /* สเกลรวมของบานนี้ — เนื้อหาน้อย พื้นที่เยอะ */
+.gv-buy { margin-left: 34.8%; height: 49.5%; display: flex; flex-direction: column; gap: .55em; }
+.gv-price { display: flex; align-items: baseline; gap: .6em; flex-wrap: wrap; }
+.gv-chart { flex: 1 1 auto; min-height: 5em; }
+.gv-trade { display: flex; align-items: center; gap: .7em; flex-wrap: wrap; }
+.gv-trade .qty2 { font-size: 1.12em; }
+.gv-trade .buy2 { font-size: 1.08em; padding: .45em 1.5em; }
+.gv-recv { font-size: 1.05em; }
+.gv-recv b { color: #ffe9a3; }
+.gv-row { display: flex; gap: .9em; margin-top: 1.2%; height: 36.5%; }
+.gv-card { flex: 1; display: flex; flex-direction: column; gap: .55em; align-items: flex-start; overflow: hidden;
+  justify-content: flex-start; padding: .9em 1em; }
+.gv-card .wp-title { align-self: stretch; } /* ให้ Lv. ชิดขวาได้ (การ์ดเป็น align-items:flex-start) */
+.gv-card .wa-sub { font-size: 1.05em; }
+.gv-lv { margin-left: auto; color: #ffd24d; font-size: .82em; }
+.gv-bar { width: 100%; height: 1.05em; background: rgba(0,0,0,.55); border-radius: .5em; overflow: hidden; margin-top: .3em; }
+.gv-bar i { display: block; height: 100%; background: linear-gradient(90deg, #ffd24d, #ffb84d); border-radius: .5em; }
+.gv-up { font-size: 1em; padding: .5em .8em; margin-top: auto; align-self: stretch; }
+.gv-pips { margin-top: .3em; }
+.gv-pips i { width: .95em; height: 1.45em; }
+.gv-gold { color: #ffe9a3; }
+.gv-foot { text-align: center; color: #9fb4c8; font-size: 1em; margin-top: 1%; }
+
+/* ---------- Bonds & Fund ---------- */
+.win-as-bond .wa-body { font-size: 1.55em; } /* อาร์ตใหม่ bonds_new (2026-07-20) ช่องเปิดใหญ่ขึ้น + user ขอฟอนต์ใหญ่ */
+/* ชื่อหน้าต่างบนแบนเนอร์เขียวของอาร์ต bonds_new */
+.bd-banner { position: absolute; left: 36%; right: 36%; top: 8.4%; height: 7.6%;
+  display: flex; align-items: center; justify-content: center; pointer-events: none;
+  font-size: 2.05em; font-weight: 800; letter-spacing: .06em; color: #ffe9a8;
+  text-shadow: 0 .06em .1em rgba(0,0,0,.65); }
+.bd-left { width: 56%; }
+.bd-t2 { margin-top: .6em; }
+.bd-ico { background: #3f7a52; }
+.bd-left .wf-table { font-size: .96em; } /* กันตารางล้นแนวนอน */
+.win-as-crypto .wf-table { font-size: .95em; } /* กันคอลัมน์ BUY โดนตัด — ตาราง 7 คอลัมน์กว้างสุดในเกม */
+.win-as-crypto .wf-table td { padding: .48em .42em; }
+.bd-left .wf-table td { padding: .6em .34em; }
+.bd-left .buy2 { padding: .38em .95em; }
+.bd-left .wa-note { margin-top: auto; }
+.bd-funds { flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-direction: column;
+  gap: .7em; justify-content: flex-start; }
+.bd-fund { display: flex; gap: .65em; align-items: center; background: rgba(0,0,0,.3); flex: 1;
+  border: .08em solid rgba(255,255,255,.09); border-radius: .6em; padding: .6em .7em; }
+.bd-fmid { flex: 1; display: flex; flex-direction: column; line-height: 1.4; }
+.bd-fmid small { color: #9fb4c8; font-size: .88em; }
+.bd-fbtns { display: flex; flex-direction: column; gap: .35em; }
+.bd-fbtns .buy2 { font-size: .88em; padding: .32em .7em; }
+.bd-cash { margin-top: auto; }
+
+/* ---------- Real Estate (เลย์เอาต์ตาม asset real estate win.png) ----------
+   เมนูซ้าย + คอลัมน์กลาง + คอลัมน์ขวา + ปุ่มลัดใหญ่ 4 ปุ่มแถวล่าง */
+/* เลย์เอาต์ใหม่ 2 คอลัมน์ (ไม่มีแถบเมนูซ้าย) ตาม real estate win ex.png */
+.re-grid { display: grid; width: 100%; height: 100%; min-height: 0; gap: .8em;
+  grid-template-columns: minmax(0, 1fr) 24em; grid-template-rows: minmax(0, 1fr) auto; }
+.re-cashline { margin-top: auto; padding-top: .5em; font-size: 1.02em; color: #cfe0f0;
+  border-top: .08em dashed rgba(255,255,255,.12); text-align: right; }
+.re-cashline b { color: #7ef598; font-size: 1.1em; margin-left: .3em; }
+.re-side { display: flex; flex-direction: column; gap: .45em; min-height: 0; overflow: hidden auto;
+  background: rgba(3,10,24,.45); border: .1em solid var(--waline); border-radius: .8em; padding: .7em .6em; }
+.re-nav { font: inherit; font-size: 1.08em; font-weight: 700; color: #b9cadb; cursor: pointer; text-align: left;
+  display: flex; align-items: center; gap: .55em; background: rgba(9,20,44,.55);
+  border: .09em solid rgba(80,110,160,.35); border-radius: .55em; padding: .5em .65em; white-space: nowrap; }
+.re-nav:hover { color: #fff; border-color: #5b7d99; }
+.re-nav.active { color: #fff; background: linear-gradient(#1f3f78, #14284e); border-color: #4da3ff;
+  box-shadow: 0 0 .6em rgba(77,163,255,.45), inset 0 0 .8em rgba(77,163,255,.2); }
+.re-nico { font-size: 1.25em; line-height: 1; flex: none; }
+.re-sidecash { margin-top: auto; display: flex; align-items: center; gap: .5em; font-size: 1em;
+  background: rgba(0,0,0,.35); border: .09em solid rgba(255,210,77,.35); border-radius: .55em; padding: .5em .6em; }
+.re-main, .re-col3 { display: flex; flex-direction: column; gap: .8em; min-height: 0; }
+.re-panel { display: flex; flex-direction: column; gap: .55em; min-height: 0; }
+.re-fill { flex: 1 1 auto; }
+.re-stats .ov-stat b { font-size: 1.18em; }
+.re-typesp { flex: 1 1 auto; }
+.re-donutrow { display: flex; gap: 1em; align-items: center; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.re-donut { height: 100%; max-height: 17em; aspect-ratio: 1; flex: none; }
+.re-donut canvas { width: 100%; height: 100%; display: block; }
+.re-leg { flex: 1; min-width: 0; max-height: 100%; gap: .45em; }
+.re-leg .pf-leg { font-size: 1.12em; }
+.re-leg .pf-leg small { color: #8fa8bf; margin-left: auto; }
+.re-leg .pf-leg b { margin-left: .8em; }
+.re-viewall { font: inherit; font-size: .62em; font-weight: 600; color: #9fc0dd; cursor: pointer;
+  background: rgba(0,0,0,.3); border: .1em solid rgba(80,110,160,.4); border-radius: .5em;
+  padding: .2em .8em; margin-left: auto; letter-spacing: 0; }
+.re-viewall:hover { color: #fff; border-color: #5b7d99; }
+.re-txp { flex: none; }
+.re-txlist { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.re-tx { display: flex; gap: .5em; align-items: baseline; border-bottom: .08em dashed rgba(255,255,255,.1); padding: .4em 0; font-size: 1.05em; }
+.re-tx span { flex: 1; }
+.re-tx small { color: #8fa8bf; }
+.re-topp { flex: none; }
+.re-toprow { display: flex; gap: .55em; align-items: center; background: rgba(0,0,0,.3);
+  border: .08em solid rgba(255,255,255,.09); border-radius: .6em; padding: .45em .55em; }
+.re-topmid { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.re-topmid b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.re-stars i { font-style: normal; color: #3a4a63; font-size: .82em; }
+.re-stars i.on { color: #ffd24d; }
+.re-topval { text-align: right; line-height: 1.25; flex: none; }
+.re-topval b { display: block; font-size: .98em; }
+.re-topval small { color: #8fa8bf; font-size: .8em; }
+.re-trendp { flex: 1 1 auto; }
+.re-idx { display: flex; align-items: baseline; gap: .5em; flex-wrap: wrap; }
+.re-idx > b { font-size: 1.7em; color: #eaf4ff; }
+.re-idx small { width: 100%; color: #8fa8bf; font-size: .85em; }
+.re-trend { flex: 1 1 auto; min-height: 6em; }
+.re-list { flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: .55em; }
+.re-card { display: flex; gap: .6em; align-items: center; background: rgba(0,0,0,.3);
+  border: .08em solid rgba(255,255,255,.09); border-radius: .6em; padding: .55em .65em; }
+.re-card.own { border-color: rgba(126,245,152,.45); }
+.re-mid { flex: 1; display: flex; flex-direction: column; line-height: 1.35; }
+.re-mid small { color: #9fb4c8; font-size: .88em; }
+.re-btns { display: flex; gap: .45em; align-items: center; }
+.re-own { color: #7ef598; font-weight: 700; font-size: .92em; white-space: nowrap; }
+/* ปุ่มลัดใหญ่แถวล่าง — 4 สีตามภาพอ้างอิง */
+.re-actions { grid-column: 1 / -1; display: flex; gap: .8em; }
+.re-act { flex: 1; font: inherit; color: #fff; cursor: pointer; display: flex; align-items: center; gap: .6em;
+  border-radius: .7em; padding: .55em .8em; text-align: left; border: .12em solid rgba(255,255,255,.25);
+  text-shadow: 0 1px 2px rgba(0,0,0,.55); box-shadow: 0 .2em .5em rgba(0,0,0,.4), inset 0 .12em .2em rgba(255,255,255,.18); }
+.re-act:hover { filter: brightness(1.13); }
+.re-act:active { transform: translateY(.08em); }
+.re-act.active { border-color: #ffd24d; box-shadow: 0 0 .7em rgba(255,210,77,.45), inset 0 .12em .2em rgba(255,255,255,.18); }
+.re-aico { font-size: 1.7em; line-height: 1; flex: none; }
+.re-atxt { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.re-atxt b { font-size: 1.08em; letter-spacing: .03em; white-space: nowrap; }
+.re-atxt small { font-size: .78em; opacity: .85; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.re-act-purple { background: linear-gradient(#7a4fd0, #4c2b8e); }
+.re-act-green  { background: linear-gradient(#3fae52, #1e6e2e); }
+.re-act-blue   { background: linear-gradient(#2f7fe0, #1c4fa0); }
+.re-act-gold   { background: linear-gradient(#d99a26, #9a6410); }
+
+/* ============================================================
+   Real Estate — premium polish (styling only, scoped to หน้าต่างนี้)
+   ไม่แตะ layout/logic — override เฉพาะพื้นผิว: gradient/เงา/ขอบทอง/glow
+   ============================================================ */
+/* พื้นหลัง panel + sidebar: ไล่เฉดน้ำเงินเข้ม (#0a1e3d→#1a3a6b) + ขอบทองโลหะบางๆ
+   + sheen ด้านบน (แสงตกกระทบโลหะ) + inner glow น้ำเงิน + เงานอก */
+.win-as-realestate .wa-p,
+.win-as-realestate .re-side {
+  background:
+    linear-gradient(158deg, rgba(46,86,150,.42) 0%, transparent 46%),
+    linear-gradient(180deg, #1a3a6b 0%, #0e2749 48%, #0a1e3d 100%);
+  border: .1em solid rgba(218,165,32,.42);
+  box-shadow:
+    0 .35em .9em rgba(0,0,0,.5),
+    inset 0 .09em 0 rgba(255,226,150,.2),
+    inset 0 0 1.5em rgba(66,118,190,.14);
+}
+/* sidebar = แผงพระเอก → ขอบทองเข้มขึ้นอีกนิดให้ดู premium */
+.win-as-realestate .re-side {
+  border-color: rgba(255,205,90,.5);
+  box-shadow:
+    0 .4em 1em rgba(0,0,0,.55),
+    inset 0 .1em 0 rgba(255,230,160,.24),
+    inset 0 0 1.6em rgba(70,120,195,.16);
+}
+/* ปุ่มเมนูซ้าย */
+.win-as-realestate .re-nav {
+  background: linear-gradient(165deg, rgba(20,44,82,.7), rgba(7,18,40,.7));
+  border-color: rgba(150,180,220,.22);
+  box-shadow: 0 .14em .35em rgba(0,0,0,.35), inset 0 .06em 0 rgba(255,255,255,.07);
+}
+.win-as-realestate .re-nav:hover {
+  border-color: rgba(255,210,120,.5);
+  box-shadow: 0 .18em .45em rgba(0,0,0,.45), inset 0 0 .7em rgba(90,140,210,.2);
+}
+.win-as-realestate .re-nav.active {
+  background: linear-gradient(#254a8a, #142c56);
+  border-color: #6fb4ff;
+  box-shadow: 0 0 .8em rgba(90,165,255,.5), inset 0 0 .9em rgba(90,165,255,.24),
+    inset 0 .08em 0 rgba(255,255,255,.12);
+}
+/* การ์ด/แถวข้อมูล: เพิ่มมิติ — ขอบอ่อนโปร่ง + inner glow + เงา */
+.win-as-realestate .re-card,
+.win-as-realestate .re-toprow {
+  background: linear-gradient(160deg, rgba(24,50,90,.5), rgba(6,16,34,.55));
+  border-color: rgba(155,185,225,.2);
+  box-shadow: 0 .18em .45em rgba(0,0,0,.4), inset 0 .06em 0 rgba(255,255,255,.08);
+}
+.win-as-realestate .re-card.own {
+  border-color: rgba(126,245,152,.5);
+  box-shadow: 0 .18em .45em rgba(0,0,0,.4), inset 0 0 .8em rgba(90,200,130,.18);
+}
+.win-as-realestate .re-sidecash {
+  background: linear-gradient(160deg, rgba(60,44,10,.5), rgba(20,14,4,.55));
+  border-color: rgba(255,210,77,.5);
+  box-shadow: inset 0 .07em 0 rgba(255,230,160,.2), 0 .14em .35em rgba(0,0,0,.4);
+}
+/* ปุ่มลัดใหญ่แถวล่าง: gradient 3 สต็อป (เนื้อโลหะ) + เงาลึก + hover สว่าง/เรืองแสง */
+.win-as-realestate .re-act {
+  border: .12em solid rgba(255,255,255,.3);
+  box-shadow:
+    0 .3em .65em rgba(0,0,0,.5),
+    inset 0 .15em .24em rgba(255,255,255,.26),
+    inset 0 -.2em .3em rgba(0,0,0,.28);
+}
+.win-as-realestate .re-act:hover {
+  filter: brightness(1.16) saturate(1.08);
+  box-shadow:
+    0 .38em .85em rgba(0,0,0,.55),
+    0 0 .85em rgba(255,255,255,.16),
+    inset 0 .15em .24em rgba(255,255,255,.32),
+    inset 0 -.2em .3em rgba(0,0,0,.28);
+}
+.win-as-realestate .re-act-purple { background: linear-gradient(160deg, #9163e0 0%, #6a3fc0 52%, #4c2b8e 100%); }
+.win-as-realestate .re-act-green  { background: linear-gradient(160deg, #57c56b 0%, #2f8f42 52%, #1e6e2e 100%); }
+.win-as-realestate .re-act-blue   { background: linear-gradient(160deg, #4a97f0 0%, #2568c8 52%, #1c4fa0 100%); }
+.win-as-realestate .re-act-gold   { background: linear-gradient(160deg, #f2b643 0%, #cf8c1e 52%, #9a6410 100%); }
+/* ปุ่มซื้อ/ขาย + ปุ่ม "ดูทั้งหมด" ให้เข้าชุด */
+.win-as-realestate .buy2 {
+  box-shadow: 0 .16em .4em rgba(0,0,0,.4), inset 0 .1em .16em rgba(255,255,255,.22);
+}
+.win-as-realestate .re-viewall {
+  background: linear-gradient(160deg, rgba(20,44,82,.7), rgba(7,18,40,.7));
+  border-color: rgba(150,180,220,.35);
+  box-shadow: inset 0 .06em 0 rgba(255,255,255,.08);
+}
+/* ตัวเลขสำคัญ: text-shadow เรืองแสงบางๆ */
+.win-as-realestate .re-idx > b { text-shadow: 0 0 .5em rgba(120,180,255,.55), 0 1px 2px rgba(0,0,0,.6); }
+.win-as-realestate .ov-stat b,
+.win-as-realestate .re-topval b,
+.win-as-realestate .re-sidecash b,
+.win-as-realestate .wf-cashcol b { text-shadow: 0 0 .4em rgba(120,180,255,.42), 0 1px 1px rgba(0,0,0,.55); }
+.win-as-realestate .re-own { text-shadow: 0 0 .45em rgba(126,245,152,.5), 0 1px 1px rgba(0,0,0,.5); }
+
+/* ---------- Startup Hub ---------- */
+/* แถวชิปสถานะบนสุดของเนื้อหา (อาร์ตใหม่ไม่มีโซน HUD ในกรอบแล้ว → วางในตัวเนื้อหาแทน) */
+.su-chips { flex: none; display: flex; gap: .7em; }
+.su-chip { flex: 1; background: rgba(4,14,26,.72); border: .1em solid var(--waline); border-radius: .6em;
+  padding: .25em .6em; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.su-chip label { font-size: .78em; color: #9fc0dd; white-space: nowrap; }
+.su-chip b { font-size: 1.08em; color: #ffe9a3; white-space: nowrap; }
+.su-cols { display: flex; gap: .8em; width: 100%; min-height: 0; flex: 1 1 auto; }
+.su-col { flex: 1; display: flex; flex-direction: column; gap: .5em; min-height: 0; overflow: hidden auto; }
+.su-biz { display: flex; gap: .6em; align-items: center; }
+.su-biz small { color: #9fb4c8; display: block; }
+.su-bigico { font-size: 2.3em; line-height: 1; }
+.su-xp { height: .5em; margin-top: .25em; }
+.su-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .4em; }
+.su-grid > div { background: rgba(0,0,0,.32); border-radius: .5em; padding: .35em .5em; min-width: 0; }
+.su-grid label { display: block; font-size: .74em; color: #9fb4c8; white-space: nowrap; }
+.su-grid b { font-size: 1.02em; color: #eaf4ff; }
+.su-t2 { margin-top: .35em; }
+.su-donutrow { display: flex; gap: .7em; align-items: center; flex: none; overflow: hidden; }
+.su-donut { width: 7.2em; height: 7.2em; flex: none; }
+.su-leg { flex: 1; min-width: 0; font-size: .8em; display: grid; grid-template-columns: 1fr 1fr; gap: .25em .5em;
+  align-content: center; max-height: 100%; }
+.su-ap { margin-left: auto; font-size: .8em; color: #9fc0dd; font-weight: 400; }
+.su-ap b { color: #ffd24d; }
+.su-list { display: flex; flex-direction: column; gap: .5em; overflow: auto; min-height: 0; }
+.su-card { display: flex; gap: .55em; align-items: center; background: rgba(0,0,0,.32);
+  border: .08em solid rgba(255,255,255,.09); border-radius: .6em; padding: .5em .6em; flex: none; }
+.su-card.own { border-color: rgba(126,245,152,.4); }
+.su-cico { font-size: 1.7em; line-height: 1; }
+.su-cmid { flex: 1; display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+.su-cmid small { color: #9fb4c8; font-size: .84em; }
+.su-cbtn { display: flex; flex-direction: column; gap: .25em; align-items: flex-end; }
+.su-cbtn small { color: #ffd24d; white-space: nowrap; }
+.su-cbtn .buy2 { font-size: .88em; padding: .3em .8em; }
+
+/* การ์ดเลือกธุรกิจตอนเทิร์นแรก (Startup — user 2026-07-13) */
+/* justify-center: การ์ดเลือกธุรกิจมีไม่กี่ใบ — จัดกลางแนวตั้งกันช่องว่างใหญ่ใต้การ์ด (กรอบใหม่สูงกว่าเดิม) */
+/* กริด 2×2 (user 2026-07-16 — เดิมแถวเดียว 4 ใบ ตัวหนังสือเล็ก) การ์ดกว้างขึ้น → stats เรียง 4 ช่องแถวเดียว */
+.su-pick { display: flex; flex-direction: column; justify-content: center; gap: .7em;
+  width: 100%; min-height: 0; flex: 1 1 auto; overflow: auto; font-size: 1.15em; }
+.su-pickgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75em; }
+.su-pcard { display: flex; flex-direction: column; align-items: center; gap: .28em; text-align: center;
+  background: rgba(0,0,0,.34); border: .1em solid rgba(255,255,255,.1); border-radius: .8em; padding: .75em .9em; }
+.su-pcard.poor { opacity: .58; }
+.su-pcard .su-bigico { font-size: 2.6em; }
+.su-pname { font-size: 1.2em; color: #eaf4ff; font-weight: 800; }
+.su-pdesc { font-size: .85em; color: #9fb4c8; line-height: 1.35; }
+.su-pstats { width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: .35em; margin: .25em 0 .45em; }
+.su-pstats > div { background: rgba(0,0,0,.3); border-radius: .5em; padding: .32em .45em; }
+.su-pstats label { display: block; font-size: .78em; color: #9fb4c8; white-space: nowrap; }
+.su-pstats b { font-size: 1em; color: #ffe6a6; }
+.su-pbuy { width: 100%; padding: .5em; margin-top: auto; font-size: 1em; background: linear-gradient(#46b654, #1e7c2e); }
+.su-pbuy:disabled { opacity: .5; cursor: not-allowed; filter: grayscale(.5); }
+
+/* Green Invest: ยังไม่ได้เริ่มธุรกิจ */
+.gi-noboot { display: flex; flex-direction: column; align-items: flex-start; gap: .8em; max-width: 32em; margin: auto; }
+.gi-noboot .wf-btn { width: auto; padding: .6em 1.3em; display: flex; flex-direction: column; align-items: center;
+  background: linear-gradient(#46b654, #1e7c2e); }
+.gi-noboot .wf-btn small { font-weight: 400; font-size: .74em; opacity: .9; }
+.su-mk.openmk { border-color: rgba(126,245,152,.35); }
+.su-lock { color: #8fa8bf; font-size: .9em; white-space: nowrap; }
+/* ปุ่ม GREEN INVEST = อาร์ตในกรอบมุมซ้ายล่าง (startup hub win new.png) → hotspot โปร่งใสทับ
+   วัดจากภาพ crop: ป้าย x 4.3..33.3% y 85.8..95.4% */
+.su-gihot { position: absolute; left: 4.3%; top: 85.8%; width: 29%; height: 9.6%;
+  background: transparent; border: none; cursor: pointer; border-radius: .8em; }
+.su-gihot:hover { background: rgba(180,255,150,.16); box-shadow: 0 0 1.2em rgba(150,255,120,.45); }
+.su-fingrid { grid-template-columns: 1fr 1fr; flex: none; }
+.su-mklist { flex: none; }
+.su-empty { margin: 0; font-size: .84em; }
+.su-feed { min-height: 0; }
+.su-news { display: flex; gap: .6em; padding: .45em .1em; border-bottom: .08em dashed rgba(255,255,255,.1); }
+.su-news span { font-size: 1.5em; line-height: 1.2; }
+.su-news small { color: #b9cadb; display: block; }
+
+/* ---------- Green Invest ---------- */
+/* โปรไฟล์ธุรกิจ — เดิมลอยทับโซนอาร์ตเก่า · อาร์ตใหม่ 2026-07-15 ไม่มีโซนนั้น → อยู่ในหัวคอลัมน์ 1 */
+.gi-prof { display: flex; gap: .55em; align-items: center; color: #dff2e4; flex: none;
+  background: rgba(0,0,0,.3); border: .08em solid rgba(255,255,255,.09); border-radius: .6em; padding: .4em .55em; }
+.gi-prof label { display: block; font-size: .66em; letter-spacing: .09em; color: #9fd4ad; }
+.gi-prof b { font-size: 1.02em; display: block; }
+.gi-prof small { display: block; color: #9fd4ad; font-size: .78em; }
+.gi-body { display: flex; flex-direction: column; gap: .55em; }
+.gi-cols { display: flex; gap: .8em; flex: 1 1 auto; min-height: 0; }
+.gi-col { display: flex; flex-direction: column; gap: .45em; min-height: 0; overflow: hidden auto; }
+.gi-c1 .su-leg { grid-template-columns: 1fr; font-size: .85em; }
+.gi-c1 { width: 26%; flex: none; }
+.gi-c2 { flex: 1; }
+.gi-c3 { width: 27%; flex: none; }
+.gi-idx { font-size: 2.5em; color: #7ef598; }
+.gi-meter { position: relative; height: .85em; border-radius: .45em; background: rgba(0,0,0,.55); overflow: hidden; }
+.gi-meter i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, #35d07f, #ffd24d); border-radius: .45em; }
+.gi-meter em { position: absolute; top: 0; bottom: 0; width: .2em; background: #fff; box-shadow: 0 0 .3em #fff; }
+.gi-mini { height: .42em; margin-top: .3em; }
+.gi-tip { background: rgba(53,208,127,.1); border: .09em dashed rgba(53,208,127,.4); padding: .5em .6em;
+  border-radius: .6em; color: #bfe9cf; font-size: .9em; margin-top: auto; }
+.gi-chips { display: flex; gap: .4em; flex-wrap: wrap; flex: none; }
+.gi-chip { font: inherit; font-size: .95em; background: rgba(0,0,0,.35); color: #cfe2d8;
+  border: .09em solid var(--waline); border-radius: 1em; padding: .18em .75em; cursor: pointer; }
+.gi-chip:hover { color: #fff; }
+.gi-chip.active { background: linear-gradient(#46b654, #1e7c2e); color: #fff; border-color: #ffd24d; }
+.gi-list { flex: 1 1 auto; }
+.gi-item .gi-eff { width: 6.8em; text-align: center; flex: none; line-height: 1.2; }
+.gi-item .gi-eff small { display: block; color: #9fb4c8; font-size: .72em; }
+.gi-tier { font-size: .68em; color: #ffd24d; border: .08em solid rgba(255,210,77,.45); border-radius: .4em; padding: 0 .3em; vertical-align: middle; }
+.gi-next { border-color: rgba(255,210,77,.55); }
+.gi-checks { background: rgba(0,0,0,.32); border-radius: .6em; padding: .5em .6em; display: flex; flex-direction: column; gap: .28em; flex: none; }
+.gi-check { font-size: .88em; }
+.gi-check.ok { color: #7ef598; }
+.gi-check.no { color: #ff9c90; }
+.gi-apply { margin-top: .3em; font-size: .95em; }
+.gi-apply[disabled] { opacity: .45; cursor: not-allowed; }
+.gi-risk { margin-top: auto; background: rgba(0,0,0,.35); border: .1em solid rgba(201,133,0,.45); border-radius: .6em; padding: .5em .7em; flex: none; }
+.gi-risk label { display: block; color: #ffd24d; font-size: .84em; }
+.gi-risk b { font-size: 1.35em; }
+.gi-risk small { display: block; color: #9fb4c8; }
+.gi-foot { flex: none; display: flex; gap: .8em; align-items: stretch; }
+.gi-foot .su-chip { max-width: 22%; }
+.gi-gohub { margin-left: auto; display: flex; flex-direction: column; align-items: center; gap: .1em;
+  background: linear-gradient(#3b7bd6, #1e4c8f); }
+.gi-gohub small { font-weight: 400; font-size: .72em; opacity: .9; }
+
+/* ============================================================
+   GAME_SPEC ใหม่ — ระบบอาชีพลับ + duel + ธนาคาร + ตึกข่าว + ลีดเดอร์บอร์ด
+   ============================================================ */
+
+/* ---------- เฟสโจมตี ---------- */
+.attack-phase { max-width: 1060px; margin: 0 auto; padding: 12px 16px 28px; }
+.attack-phase h3 { margin: 18px 0 10px; }
+.hand-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.hand-row.center { justify-content: center; }
+.hand-card { background: linear-gradient(160deg, #1d2c44, #12203a); border: 1px solid #3c5578; border-radius: 12px;
+  padding: 12px 16px; min-width: 150px; text-align: center; position: relative; }
+.hand-card.big { min-width: 210px; padding: 18px; }
+.hand-card .hc-emoji { font-size: 34px; }
+.hand-card b { display: block; margin: 4px 0 2px; }
+.hand-card small { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
+.hand-card .hc-tag { position: absolute; top: 6px; right: 8px; font-size: 10px; color: #ffd24d; border: 1px solid rgba(255,210,77,.5); border-radius: 6px; padding: 0 5px; }
+.hand-card .hc-tag.secret { color: #7ef598; border-color: rgba(126,245,152,.4); }
+.hand-card.faceup { border-color: #b5762a; }
+.prof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.prof-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+  text-align: left; cursor: pointer; color: var(--text); font: inherit; position: relative; transition: border-color .12s, transform .1s; }
+.prof-card:hover:not([disabled]) { border-color: var(--accent); transform: translateY(-2px); }
+.prof-card[disabled] { opacity: .45; cursor: not-allowed; }
+.prof-card .pc-emoji { font-size: 24px; margin-right: 6px; }
+.prof-card b { font-size: 15px; }
+.prof-card .pc-attack { display: block; color: #ffd24d; font-size: 12px; margin: 4px 0 2px; }
+.prof-card small { display: block; color: var(--muted); font-size: 11px; line-height: 1.4; }
+.prof-card .pc-held, .prof-card .pc-bluff { position: absolute; top: 8px; right: 10px; font-size: 10px; border-radius: 6px; padding: 1px 6px; }
+.prof-card .pc-held { color: #7ef598; border: 1px solid rgba(126,245,152,.5); }
+.prof-card .pc-bluff { color: #ff9c90; border: 1px solid rgba(255,156,144,.4); }
+.prof-card.held { border-color: rgba(126,245,152,.55); box-shadow: 0 0 0 1px rgba(126,245,152,.25) inset; }
+.warn-lie { color: #ff9c90; background: rgba(214,69,60,.12); border: 1px dashed rgba(255,156,144,.5); border-radius: 10px; padding: 8px 12px; }
+.ok-truth { color: #7ef598; background: rgba(53,208,127,.1); border: 1px dashed rgba(126,245,152,.4); border-radius: 10px; padding: 8px 12px; }
+.target-list { display: flex; flex-direction: column; gap: 8px; max-width: 560px; }
+.target-row { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 12px 14px; cursor: pointer; color: var(--text); font: inherit; font-size: 15px; text-align: left; }
+.target-row:hover:not([disabled]) { border-color: var(--accent); }
+.target-row[disabled] { opacity: .4; cursor: not-allowed; }
+.target-row .tr-emoji { font-size: 22px; }
+.hack-mode { display: flex; gap: 18px; flex-wrap: wrap; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; }
+.hack-mode label { cursor: pointer; }
+.st-chip { display: inline-block; font-size: 11px; border-radius: 8px; padding: 1px 8px; margin: 2px 4px 0 0; border: 1px solid var(--line); }
+.st-chip.bad { color: #ff9c90; border-color: rgba(255,156,144,.5); background: rgba(214,69,60,.12); }
+
+/* ---------- duel popup (resolution) ---------- */
+.duel-overlay { position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center;
+  background: rgba(4,10,22,.66); backdrop-filter: blur(3px); }
+.duel-panel { background: linear-gradient(165deg, #16243c, #0d1830); border: 1px solid #3c5578; border-radius: 16px;
+  max-width: 560px; width: calc(100% - 48px); padding: 22px 24px; box-shadow: 0 18px 60px rgba(0,0,0,.6); }
+.duel-panel h3 { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.duel-panel p { margin: 6px 0; line-height: 1.5; }
+.duel-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.duel-btns .btn { width: 100%; }
+.duel-clock { margin-left: auto; background: #0a1526; border: 1px solid var(--accent); color: var(--accent);
+  border-radius: 10px; min-width: 44px; text-align: center; padding: 2px 10px; font-size: 20px; font-weight: 700; }
+.duel-clock.danger { color: var(--red); border-color: var(--red); }
+.duel-card-news { background: rgba(0,0,0,.35); border: 1px dashed rgba(255,210,77,.5); color: #ffe9b0;
+  border-radius: 10px; padding: 10px 14px; margin: 10px auto; max-width: 520px; line-height: 1.45; }
+.duel-port { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; background: rgba(0,0,0,.3); border-radius: 10px; padding: 10px 14px; margin-top: 8px; }
+.duel-port label { color: var(--muted); font-size: 12px; display: block; }
+
+/* ---------- ฟีดเหตุการณ์ + อันดับหยาบ + การ์ดชิปบนแมพ ---------- */
+.feed-box { background: rgba(9,16,30,.74); border: 1px solid rgba(120,150,200,.3); border-radius: 10px;
+  padding: 6px 10px; font-size: 12px; max-height: 118px; overflow: auto; }
+.feed-box b { font-size: 11px; color: var(--muted); }
+.feed-item { padding: 2px 0; border-bottom: 1px dashed rgba(120,150,200,.15); line-height: 1.35; }
+.feed-item:last-child { border-bottom: 0; }
+.feed-item.challenge { color: #ffd24d; }
+.feed-item.claim { color: #9ecbff; }
+.feed-item.attack { color: #ffcfa0; }
+.feed-item.reveal { color: #ff9c90; }
+.feed-item.news { color: #bfe9cf; }
+.rank-strip { background: rgba(9,16,30,.74); border: 1px solid rgba(120,150,200,.3); border-radius: 10px;
+  padding: 5px 10px; font-size: 12px; color: #cfe2f4; }
+.my-cards { margin-top: 4px; font-size: 11px; }
+.card-chip { display: inline-block; background: rgba(0,0,0,.4); border: 1px solid rgba(126,245,152,.4); color: #d9f7e2;
+  border-radius: 8px; padding: 1px 7px; margin: 2px 3px 0 0; }
+.card-chip.faceup { border-color: #b5762a; color: #ffd24d; }
+.card-chip.lost { border-color: rgba(255,156,144,.4); color: #ff9c90; text-decoration: line-through; }
+
+/* ---------- หน้าต่างธนาคาร (กรอบ BANK & SAVINGS · แผงเขียว 2×2 + แถบ BALANCE ตามตัวอย่าง bank savings win ex) ---------- */
+.win-as-fin .bank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.9em 1.7em; padding-top: 1.1em; }
+.win-as-fin .bank-panel { position: relative; border-radius: .8em; padding: 1.35em 1.1em .85em;
+  background: linear-gradient(180deg, #46522c, #2e3c1e 55%, #253218);
+  border: .17em solid #e0ae35;
+  box-shadow: 0 .22em .55em rgba(70,35,0,.5), inset 0 0 0 .14em rgba(16,26,8,.6), inset 0 0 1.4em rgba(0,0,0,.35);
+  color: #e8f2cd; }
+/* ป้ายหัวแผง — พาดทับขอบบนแบบตัวอย่าง */
+.win-as-fin .bank-plq { position: absolute; top: 0; left: 50%; transform: translate(-50%, -58%);
+  background: linear-gradient(180deg, #1e3d21, #112614); border: .13em solid #e0ae35; border-radius: .55em;
+  padding: .22em 1.3em; white-space: nowrap; box-shadow: 0 .16em .4em rgba(0,0,0,.45); }
+.win-as-fin .bank-plq b { color: #ffe37a; font-size: 1.22em; font-weight: 800; letter-spacing: .05em;
+  text-shadow: 0 .1em .18em rgba(0,0,0,.65); }
+.win-as-fin .bank-plq small { color: #b9d18a; margin-left: .55em; font-size: .8em; letter-spacing: .14em; }
+.win-as-fin .bank-pbody { display: flex; align-items: center; gap: 1em; }
+.win-as-fin .bank-ico { font-size: 4.1em; line-height: 1; flex: none; filter: drop-shadow(0 .06em .12em rgba(0,0,0,.5)); }
+.win-as-fin .bank-ctl { flex: 1; min-width: 0; }
+.win-as-fin .bank-ctl label { display: block; color: #d7e6b0; font-size: .95em; margin-bottom: .25em; letter-spacing: .03em; }
+/* ช่องจำนวนเงิน: จอเขียวเข้ม + ปุ่มทอง − / + / MAX */
+.win-as-fin .bank-amt { display: flex; align-items: center; gap: .35em;
+  background: #141f0d; border: .12em solid #c69d30; border-radius: .5em; padding: .28em .45em;
+  box-shadow: inset 0 .15em .4em rgba(0,0,0,.6); }
+.win-as-fin .bank-amt > b { flex: 1; min-width: 0; color: #eafccf; font-size: 1.18em; font-weight: 800;
+  text-shadow: 0 0 .35em rgba(180,255,140,.25); overflow: hidden; text-overflow: ellipsis; }
+.win-as-fin .bank-amt button { font: inherit; flex: none; width: 1.65em; height: 1.65em; padding: 0; cursor: pointer;
+  background: linear-gradient(180deg, #ffd95e, #c8901f); border: .09em solid #8a5c12; border-radius: .35em;
+  color: #573a06; font-weight: 900; font-size: 1em; line-height: 1; box-shadow: 0 .1em .2em rgba(0,0,0,.4); }
+.win-as-fin .bank-amt button:hover { filter: brightness(1.12); }
+.win-as-fin .bank-amt .bank-max { width: auto; padding: 0 .5em; font-size: .78em; letter-spacing: .06em; }
+.win-as-fin .bank-sub { display: block; margin-top: .35em; color: #a8bd82; font-size: .85em; line-height: 1.3; }
+.win-as-fin .bank-sub .bad { color: #ffb0a6; }
+/* ปุ่มใหญ่ประจำแผง */
+.win-as-fin .bank-act { display: block; margin: .8em auto 0; min-width: 62%; padding: .42em 1.2em; cursor: pointer;
+  font: inherit; font-size: 1.12em; font-weight: 800; letter-spacing: .05em; color: #ffe37a;
+  background: linear-gradient(180deg, #2e4d24, #163012); border: .14em solid #e0ae35; border-radius: 2em;
+  text-shadow: 0 .1em .18em rgba(0,0,0,.6); box-shadow: 0 .18em .4em rgba(0,0,0,.45), inset 0 .12em .3em rgba(255,255,200,.12); }
+.win-as-fin .bank-act:hover { filter: brightness(1.18); }
+.win-as-fin .bank-panel.disabled .bank-act,
+.win-as-fin .bank-panel.disabled .bank-amt button { pointer-events: none; opacity: .45; }
+/* แถบ BALANCE กลางล่าง (พาดบนอาร์ตทางเข้าธนาคาร) */
+.win-as-fin .bank-balance { align-self: center; margin-top: 1.5em;
+  background: linear-gradient(180deg, #1e3d21, #0f2313); border: .16em solid #e0ae35; border-radius: .7em;
+  padding: .35em 2.4em; color: #cfe6a0; font-size: 1.25em; font-weight: 700; letter-spacing: .04em;
+  box-shadow: 0 .2em .5em rgba(0,0,0,.5); }
+.win-as-fin .bank-balance b { color: #ffe37a; font-size: 1.2em; margin-left: .55em;
+  text-shadow: 0 .1em .18em rgba(0,0,0,.65); }
+
+/* ---------- หน้าต่างตึกข่าว (สเกล em ตามกรอบ generic) ---------- */
+/* ---------- หน้าต่างตึกข่าว (กรอบ NEWS LIVE · ตาราง บริการ/ราคา/ผล ตามตัวอย่าง news win ex) ---------- */
+.win-as-news .news-tbl { display: grid; grid-template-columns: 1.4fr .85fr 1.1fr; gap: .22em;
+  background: rgba(212,168,50,.4); border: .14em solid #caa133; border-radius: .7em; padding: .22em;
+  box-shadow: 0 .2em .6em rgba(0,0,0,.45); }
+.win-as-news .news-th { background: linear-gradient(180deg, #123240, #0b2230); color: #ffe37a; font-weight: 800;
+  font-size: 1.02em; letter-spacing: .05em; text-align: center; padding: .42em .3em; border-radius: .35em; }
+.win-as-news .news-cell { background: linear-gradient(180deg, rgba(10,30,42,.94), rgba(7,21,30,.94));
+  border-radius: .35em; padding: .75em .75em; display: flex; align-items: center; gap: .65em; color: #d9e8f2; min-width: 0; }
+.win-as-news .news-ic { font-size: 2.4em; line-height: 1; flex: none; filter: drop-shadow(0 .06em .12em rgba(0,0,0,.55)); }
+.win-as-news .news-ic.sm { font-size: 1.9em; }
+.win-as-news .news-svc-t { min-width: 0; }
+.win-as-news .news-svc-t b { display: block; color: #ffd24d; font-size: 1.08em; }
+.win-as-news .news-svc-t small { color: #9fc0d2; line-height: 1.35; }
+.win-as-news .news-svc-t select { max-width: 100%; margin-top: .3em; }
+.win-as-news .news-price { flex-direction: column; justify-content: center; gap: .4em; }
+.win-as-news .news-price > b { color: #ffd24d; font-size: 1.75em; font-weight: 800; text-shadow: 0 .08em .18em rgba(0,0,0,.6); }
+.win-as-news .news-buy { font: inherit; font-size: 1em; font-weight: 800; color: #fff; cursor: pointer;
+  background: linear-gradient(180deg, #4cbf3f, #1e7c22); border: .12em solid #ffd24d; border-radius: .5em;
+  padding: .3em 1.4em; text-shadow: 0 .08em .15em rgba(0,0,0,.5); box-shadow: 0 .12em .3em rgba(0,0,0,.45); }
+.win-as-news .news-buy:hover { filter: brightness(1.15); }
+.win-as-news .news-tbl.used .news-buy { pointer-events: none; opacity: .45; }
+.win-as-news .news-eff small { color: #c6dbe8; line-height: 1.45; }
+.win-as-news .news-rumor-row { display: flex; gap: .3em; margin-top: .35em; flex-wrap: wrap; }
+.win-as-news select { background: #0a1b26; color: #d9e8f2; border: .08em solid #3e6d74; border-radius: .4em;
+  padding: .22em .4em; font: inherit; font-size: .88em; }
+.win-as-news .news-note { text-align: center; color: #cbb277; font-size: .92em; margin: .55em 0 .35em; }
+.win-as-news .news-lists { display: grid; grid-template-columns: 1fr 1fr; gap: .8em; margin: 0 6%; min-height: 0; flex: 1; }
+.win-as-news .news-lists > div { display: flex; flex-direction: column; min-height: 0; }
+.win-as-news .news-lists h5 { margin: 0 0 .3em; color: #ffd24d; font-size: .98em; }
+.win-as-news .news-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-right: .3em; }
+.news-item { background: rgba(10,30,42,.85); border: 1px solid rgba(62,109,116,.7); border-radius: .5em;
+  padding: .4em .6em; margin-bottom: .35em; font-size: .84em; line-height: 1.45; color: #d9e8f2; }
+.news-item.mine { border-color: rgba(255,210,77,.4); }
+.news-tag { font-size: .72em; border: 1px solid rgba(120,150,170,.5); border-radius: .4em; padding: 0 .4em; color: #9fc0d2; }
+.news-tag.real { color: #7ef598; border-color: rgba(126,245,152,.5); }
+.news-tag.fake { color: #ff9c90; border-color: rgba(255,156,144,.5); }
+
+/* ---------- ลีดเดอร์บอร์ด (ส่องพอร์ต · สเกล em) ---------- */
+/* ---------- หน้าต่างลีดเดอร์บอร์ด (กรอบเขียว-ทอง · มินิมอลทับอาร์ตแท่น 1/2/3) ---------- */
+.win-as-leaderboard .lb-cols { display: grid; grid-template-columns: 1fr 1.05fr; gap: 1.2em; align-items: start; }
+.win-as-leaderboard .lb-row { display: flex; align-items: center; gap: .6em; margin-bottom: .5em;
+  background: linear-gradient(180deg, rgba(16,40,22,.88), rgba(9,25,13,.88));
+  border: .1em solid rgba(202,161,51,.65); border-radius: .55em; padding: .5em .8em; color: #e8f2cd; }
+.win-as-leaderboard .lb-row.me { border-color: #ffd24d; box-shadow: 0 0 .6em rgba(255,210,77,.35); }
+.win-as-leaderboard .lb-medal { font-size: 1.3em; flex: none; width: 1.5em; text-align: center; }
+.win-as-leaderboard .lb-medal i { font-style: normal; color: #cbb277; font-weight: 800; }
+.win-as-leaderboard .lb-row > b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: #fff4d8; font-size: 1.05em; }
+.win-as-leaderboard .lb-spy { font: inherit; font-size: .85em; font-weight: 700; color: #ffe37a; cursor: pointer;
+  background: linear-gradient(180deg, #2e4d24, #163012); border: .1em solid #caa133; border-radius: 2em; padding: .25em .8em; }
+.win-as-leaderboard .lb-spy:hover { filter: brightness(1.2); }
+.win-as-leaderboard .lb-spying { font-size: .82em; color: #cbb277; }
+.win-as-leaderboard .lb-hint { background: rgba(9,25,13,.82); border: .1em dashed rgba(202,161,51,.55);
+  border-radius: .6em; padding: .7em .9em; color: #cfe6a0; }
+.win-as-leaderboard .lb-hint b { color: #ffe37a; }
+.win-as-leaderboard .lb-hint p { margin: .4em 0 0; font-size: .9em; line-height: 1.55; }
+.win-as-leaderboard .spy-detail { background: linear-gradient(180deg, rgba(16,40,22,.92), rgba(9,25,13,.92));
+  border: .12em solid #caa133; border-radius: .6em; padding: .6em .9em; color: #e8f2cd; }
+.win-as-leaderboard .spy-detail h4 { margin: 0 0 .35em; color: #ffe37a; font-size: 1.05em; }
+.spy-row { display: flex; justify-content: space-between; padding: .26em 0; border-bottom: 1px dashed rgba(202,161,51,.25); }
+.spy-row:last-child { border-bottom: 0; }
+.spy-row label { color: #b9d18a; }
+.spy-row.total { border-top: 1px solid rgba(202,161,51,.6); margin-top: .26em; padding-top: .45em; font-size: 1.05em; }
+.spy-row.total b { color: #ffe37a; }
+/* ชิปชื่อ top-3 บนแท่นรางวัลของอาร์ต + คำบรรยายบนแถบเขียวล่าง (ตำแหน่ง % ของกรอบ) */
+.win-as-leaderboard .lb-pod { position: absolute; transform: translateX(-50%); max-width: 13%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;
+  background: linear-gradient(180deg, #1e3d21, #0f2313); border: .09em solid #caa133; border-radius: 2em;
+  padding: .12em .7em; font-size: .82em; color: #ffe37a; font-weight: 700; box-shadow: 0 .12em .3em rgba(0,0,0,.5); }
+.win-as-leaderboard #lbPod1 { left: 50.2%; top: 71.6%; }
+.win-as-leaderboard #lbPod2 { left: 42.1%; top: 76%; }
+.win-as-leaderboard #lbPod3 { left: 59.3%; top: 76%; }
+.win-as-leaderboard .lb-pod:empty { display: none; }
+.win-as-leaderboard .lb-note { position: absolute; left: 20%; right: 20%; top: 93.4%; text-align: center;
+  color: #9fd6a8; font-size: .88em; letter-spacing: .03em; text-shadow: 0 .1em .2em rgba(0,0,0,.7); }
+/* ปุ่ม/ตารางในหน้าต่าง generic สเกลตามกรอบ (px เดิมเล็กบนจอใหญ่) */
+.win-generic .btn { font-size: .82em; padding: .45em .9em; border-radius: .5em; }
+.win-generic .btn-xs { font-size: .78em; padding: .28em .7em; }
+.win-generic .leaderboard { font-size: .92em; }
+.win-generic .leaderboard th, .win-generic .leaderboard td { padding: .5em .7em; }
+
+/* ---------- จอจบเกม: เฉลย + ไทม์ไลน์ ---------- */
+.end-reveal { display: flex; flex-direction: column; gap: 6px; max-width: 720px; margin: 0 auto; }
+.end-reveal-row { display: flex; justify-content: space-between; gap: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; flex-wrap: wrap; }
+.end-timeline { max-width: 720px; margin: 0 auto; max-height: 300px; overflow: auto; text-align: left; }
+.tl-row { padding: 5px 10px; border-left: 3px solid var(--line); margin-bottom: 4px; font-size: 13px; background: var(--card); border-radius: 0 8px 8px 0; }
+.tl-row.lie { border-left-color: #d6453c; }
+.tl-row.caught { border-left-color: #ffd24d; }
+.tl-row.truth { border-left-color: #35d07f; }
+.tl-row.wrong { border-left-color: #9085e9; }
+.tl-round { color: var(--muted); font-size: 11px; margin-right: 8px; }
+
+/* ============================================================
+   อาร์ตการ์ดอาชีพจริง (assets/card/cut/) แทนการ์ดข้อความ HTML ทุกจุด
+   + อนิเมชันแจกไพ่ + lightbox ซูมการ์ด
+   ============================================================ */
+
+/* ---------- กริดการ์ดอ้างอิง 8 ใบ (หน้าเซ็ตอัพ) ---------- */
+.char-grid.prof8 { grid-template-columns: repeat(auto-fit, minmax(150px, 190px)); justify-content: center; }
+.ref-card { width: 100%; display: block; cursor: zoom-in; border-radius: 10px; transition: transform .15s; }
+.ref-card:hover { transform: translateY(-4px) scale(1.03); }
+
+/* ---------- การ์ดในมือ (เฟสโจมตี) — อาร์ตจริงแทนข้อความ ---------- */
+.hand-card-img { position: relative; display: inline-block; }
+.hand-card-img img { height: 230px; width: auto; display: block; border-radius: 12px; cursor: zoom-in; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+.hand-card-img .hc-tag { position: absolute; top: 8px; right: 8px; font-size: 10px; color: #ffd24d;
+  background: rgba(0,0,0,.55); border: 1px solid rgba(255,210,77,.5); border-radius: 6px; padding: 1px 6px; }
+.hand-card-img .hc-tag.secret { color: #7ef598; border-color: rgba(126,245,152,.4); }
+.hand-card-img .hc-tag.lost-tag { color: #ff9c90; border-color: rgba(255,156,144,.4); }
+.hand-card-img.faceup img { outline: 3px solid #b5762a; outline-offset: -3px; }
+.hand-card-img.lost img { filter: grayscale(1) brightness(.6); }
+
+/* ---------- ปุ่มเลือกท่า 8 ใบ — อาร์ตการ์ดเต็มใบ ---------- */
+.prof-grid { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 700px) { .prof-grid { grid-template-columns: repeat(2, 1fr); } }
+.prof-card.pc-img { padding: 8px; text-align: center; }
+.prof-card.pc-img img { width: 100%; height: auto; display: block; border-radius: 8px; }
+.prof-card .pc-zoom { position: absolute; top: 6px; left: 8px; z-index: 2; font-size: 13px; line-height: 1;
+  background: rgba(0,0,0,.55); border-radius: 6px; padding: 3px 6px; cursor: zoom-in; }
+.prof-card .pc-zoom:hover { background: rgba(0,0,0,.8); }
+
+/* ---------- แผงการ์ดของฉันมุมล่างขวา (เฟสแมพ) ---------- */
+.ov-mycards { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 8px; pointer-events: auto; }
+.mc-card { position: relative; cursor: zoom-in; }
+.mc-card img { height: 112px; width: auto; display: block; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.5); transition: transform .12s; }
+.mc-card:hover img { transform: translateY(-4px); }
+.mc-card.faceup img { outline: 2px solid #ffd24d; outline-offset: -2px; }
+.mc-card.lost img { filter: grayscale(1) brightness(.55); }
+.mc-card .mc-badge { position: absolute; top: 4px; right: 4px; font-size: 9px; background: rgba(0,0,0,.6);
+  color: #ffd24d; border-radius: 5px; padding: 0 4px; }
+.mc-card .mc-badge.bad { color: #ff9c90; }
+
+/* ---------- thumbnail การ์ดในจอจบเกม ---------- */
+.end-card-thumbs { display: flex; gap: 4px; }
+.end-card-thumb { height: 56px; width: auto; border-radius: 6px; cursor: zoom-in; box-shadow: 0 3px 10px rgba(0,0,0,.4); }
+.end-card-thumb.lost { filter: grayscale(1) brightness(.6); }
+
+/* ---------- lightbox ซูมการ์ดเต็มจอ ---------- */
+.card-zoom { position: fixed; inset: 0; z-index: 4000; background: rgba(4,8,18,.82);
+  display: flex; align-items: center; justify-content: center; cursor: zoom-out; animation: cardZoomFade .15s ease-out; }
+.card-zoom img { max-height: 92vh; max-width: 92vw; border-radius: 16px; filter: drop-shadow(0 20px 60px rgba(0,0,0,.7)); }
+@keyframes cardZoomFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- เวทีแจกไพ่ (หน้าเฉลยการ์ด) ---------- */
+.deal-stage { position: relative; height: 46vh; min-height: 320px; margin: 18px auto; max-width: 760px; }
+.deck-pile { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transition: opacity .4s; }
+.deck-pile.gone { opacity: 0; }
+.deck-pile .deck-card { position: absolute; left: 0; top: 0; width: 150px; height: auto; border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  transform: translate(-50%, calc(-50% + var(--oy, 0px))) rotate(var(--r, 0deg)); }
+.deck-pile.shuffling .deck-card { animation: deal-shuffle .9s ease-in-out; }
+@keyframes deal-shuffle {
+  0%   { transform: translate(-50%, calc(-50% + var(--oy, 0px))) rotate(var(--r, 0deg)); }
+  25%  { transform: translate(calc(-50% - 40px), calc(-50% + var(--oy, 0px))) rotate(-12deg); }
+  50%  { transform: translate(calc(-50% + 40px), calc(-50% + var(--oy, 0px))) rotate(12deg); }
+  75%  { transform: translate(calc(-50% - 20px), calc(-50% + var(--oy, 0px))) rotate(-6deg); }
+  100% { transform: translate(-50%, calc(-50% + var(--oy, 0px))) rotate(var(--r, 0deg)); }
+}
+.flip-card { position: absolute; left: 50%; top: 50%; width: 200px; height: 280px; opacity: 0;
+  transform: translate(-50%, -50%); perspective: 1000px;
+  transition: left .55s cubic-bezier(.2,.8,.2,1), opacity .3s, transform .15s; }
+.flip-card.slot-0 { left: calc(50% - 150px); }
+.flip-card.slot-1 { left: calc(50% + 150px); }
+.flip-card.dealt { opacity: 1; }
+.flip-card.clickable { cursor: zoom-in; }
+.flip-card.clickable:hover { transform: translate(-50%, calc(-50% - 8px)); }
+.flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .5s; }
+.flip-card.open .flip-inner { transform: rotateY(180deg); }
+.flip-back, .flip-front { position: absolute; left: 0; top: 0; width: 100%; height: 100%; backface-visibility: hidden; }
+.flip-front { transform: rotateY(180deg); }
+.flip-back img, .flip-front img { width: 100%; height: 100%; object-fit: contain; display: block;
+  border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.55); }
+
+/* ============================================================
+   ระบบเหตุการณ์สุ่ม (events.js) — ประกาศหนังสือพิมพ์ + คัตซีน + ตึกปิด
+   ============================================================ */
+
+/* ฟีด/ไทม์ไลน์ชนิดเหตุการณ์ */
+.feed-item.event { border-left: 3px solid #f7c948; }
+.feed-item.regimeHint { opacity: .82; font-style: italic; }
+.tl-row.event { border-left: 3px solid #f7c948; }
+
+/* Overlay ประกาศ */
+.evt-overlay { position: fixed; inset: 0; background: rgba(6,10,18,.55);
+  display: flex; align-items: center; justify-content: center; z-index: 5000;
+  opacity: 0; transition: opacity .3s ease; cursor: pointer; }
+.evt-overlay.in { opacity: 1; }
+.evt-overlay.out { opacity: 0; }
+
+/* หนังสือพิมพ์ปลิวเข้ามา (scale 0.1 + หมุน 3 รอบ → กลางจอ)
+   อาร์ต paper_good/bad = สี่เหลี่ยมจัตุรัส (พาดหัวว่าง y23-36% · กรอบรูปกลาง y40-72%)
+   ไม่มีพื้นสีตาม tier แล้ว (user 2026-07-20) — fallback สีกระดาษกลางๆ สีเดียว */
+.evt-paper { position: relative; width: min(84vw, 76vh, 540px); aspect-ratio: 1 / 1;
+  background: #efe5c4; border-radius: 14px; overflow: hidden; box-shadow: 0 22px 64px rgba(0,0,0,.62);
+  transform: scale(.1) rotate(1080deg); transition: transform 1.15s cubic-bezier(.2,.9,.3,1); }
+.evt-overlay.in .evt-paper { transform: scale(1) rotate(0deg); }
+
+.evt-paper-bg { position: absolute; inset: 0; }
+.evt-paper-bg .evt-emoji { position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-size: clamp(3rem, 12vw, 5.5rem); opacity: .25; }
+.evt-paper-bg img { position: relative; width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* พาดหัว: วางในแถบกรอบว่างบนของอาร์ตหนังสือพิมพ์ */
+.evt-headline { position: absolute; left: 15%; right: 15%; top: 22.5%; height: 14%;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-size: clamp(1.05rem, 3.4vw, 1.6rem); font-weight: 800; color: #3d2e10; line-height: 1.12; }
+
+/* ไอคอนเหตุการณ์: กลางกรอบรูปของหนังสือพิมพ์พอดี */
+.evt-icon { position: absolute; left: 34%; top: 40%; width: 32%; aspect-ratio: 1 / 1; }
+.evt-icon .evt-emoji { position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-size: clamp(2.4rem, 9vw, 4.4rem); }
+.evt-icon img { position: relative; width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,.35)); }
+
+/* คำอธิบายผลจริง (ใครได้/เสียอะไร) — ชิปกระดาษทับคอลัมน์ล่าง */
+.evt-desc { position: absolute; left: 11%; right: 11%; top: 73.5%; max-height: 22%;
+  overflow-y: auto; background: rgba(250,243,219,.95); border: 1px solid rgba(122,96,40,.4);
+  border-radius: 10px; padding: .4em .65em; text-align: center; color: #3d2e10;
+  font-size: clamp(.76rem, 2.1vw, .95rem); line-height: 1.3; }
+/* เหตุการณ์ผลเยอะ (พายุ/อุกกาบาตปิดหลายตึก) — ขยายชิปขึ้นไปด้านบน + ย่อฟอนต์ ไม่ให้บรรทัดท้ายโดนตัด */
+.evt-desc.evt-desc-lg { top: 63%; max-height: 32.5%; font-size: clamp(.68rem, 1.8vw, .84rem);
+  line-height: 1.25; }
+.evt-line { font-weight: 700; }
+.evt-flavor { font-style: italic; font-weight: 400; opacity: .8; margin-top: .18em;
+  color: #5c4a22; font-size: .9em; }
+.evt-warn-note { margin-top: .3em; font-size: .85em; color: #ffd9a0; }
+.evt-tap { position: absolute; left: 0; right: 0; bottom: 2%; text-align: center;
+  font-size: .74rem; color: #f2e9d2; text-shadow: 0 1px 4px rgba(0,0,0,.8); opacity: .85; }
+
+/* telegraph (ลูกแก้วหมอดู): อาร์ตไม่มีช่องข้อความ — ใช้ชิปมืดทับแทน */
+.evt-warn .evt-headline { top: 4%; height: auto; left: 50%; right: auto; transform: translateX(-50%);
+  max-width: 88%; padding: .3em .8em; background: rgba(22,12,32,.78); color: #ffd9a0;
+  border-radius: 10px; white-space: nowrap; }
+.evt-warn .evt-desc { top: 78%; background: rgba(22,12,32,.82); color: #ffe9c9;
+  border-color: rgba(255,200,120,.35); }
+.evt-warn .evt-tap { color: #e8d9f2; }
+
+/* คัตซีนอุกกาบาต */
+.evt-cutscene { position: fixed; inset: 0; z-index: 5200; pointer-events: none; overflow: hidden; }
+/* ก้อนอุกกาบาต — .evt-meteor = "จุดที่ก้อนอยู่" (ขนาด 0) ทุกชิ้นวางเทียบจุดนี้
+   ตำแหน่ง/ขนาด/มุมหาง (--ang)/การกลับด้าน เซ็ตจาก JS (_meteorCutscene)
+   ⚠️ ห้ามหมุนสไปรต์ (user 2026-07-20): อาร์ตวาดก้อนไว้ล่าง หางไฟพุ่งขึ้น 45° อยู่แล้ว
+      มาจากซ้าย/ขวาใช้ scaleX(-1) กลับด้านเอา — หมุนแล้วไฟจะไปอยู่ใต้ก้อน */
+.evt-meteor { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.evt-meteor-img { position: absolute; z-index: 2; display: block; }
+.evt-meteor-img .evt-emoji { position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-size: clamp(58px, 8vw, 90px); }
+.evt-meteor-img img { width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 0 14px rgba(255,140,40,.85)) drop-shadow(0 0 30px rgba(255,80,10,.5)); }
+
+/* หางไฟยาวย้อนไปทางที่มา (เรียวจางท้ายหาง) — ยื่นจากตัวก้อนขึ้นด้านบน */
+.evt-trail { position: absolute; left: 0; top: 0; z-index: 0;
+  transform-origin: 0 50%; transform: rotate(var(--ang, 225deg)) translateY(-50%);
+  background: linear-gradient(90deg, rgba(255,214,120,.95) 0%, rgba(255,138,32,.72) 26%,
+    rgba(226,74,16,.34) 58%, rgba(180,40,10,0) 100%);
+  border-radius: 50%; filter: blur(7px); animation: evtTrail .16s steps(2) infinite alternate; }
+@keyframes evtTrail { from { opacity: .78; transform: rotate(var(--ang,225deg)) translateY(-50%) scaleY(.86); }
+  to { opacity: 1; transform: rotate(var(--ang,225deg)) translateY(-50%) scaleY(1.12); } }
+
+/* เปลวไฟห่อตัวก้อน (วูบวาบ) — ขนาด/ออฟเซ็ตจาก JS ให้พอดีก้อน */
+.evt-fire { position: absolute; z-index: 1; border-radius: 50%; mix-blend-mode: screen;
+  background: radial-gradient(circle at 50% 55%, rgba(255,246,214,.95) 0%, rgba(255,196,72,.85) 26%,
+    rgba(255,116,24,.6) 52%, rgba(214,52,10,.28) 74%, rgba(120,20,0,0) 100%);
+  filter: blur(3px); animation: evtFire .12s steps(2) infinite alternate; }
+@keyframes evtFire { from { transform: scale(.88) translateY(2%); opacity: .82; }
+  to { transform: scale(1.1) translateY(-3%); opacity: 1; } }
+
+/* แฟลชตอนชน — วางที่ตึกที่โดนเท่านั้น ไม่มีพื้นขาวเต็มจอ */
+/* ขนาดมาจาก JS (ลูกหลง = เล็กกว่าลูกที่ชนตึก) */
+.evt-impact { position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%,-50%) scale(.35); opacity: 0;
+  transition: transform .34s cubic-bezier(.2,.9,.3,1.4), opacity .3s ease; }
+.evt-impact.on { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+.evt-impact.on.fade { transform: translate(-50%,-50%) scale(1.18); opacity: 0;
+  transition: transform .5s ease-out, opacity .5s ease-out; }
+.evt-impact-img { position: relative; display: block; width: 100%; height: 100%;
+  filter: drop-shadow(0 0 26px rgba(255,170,60,.75)); }
+.evt-impact-img .evt-emoji { position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-size: clamp(90px, 14vw, 190px); }
+.evt-impact-img img { width: 100%; height: 100%; object-fit: contain; }
+
+/* ---- ไฟดับทั้งเมือง (blackout) — ย้อมจอมืดลง ~30% ใต้ UI/หน้าต่างตึก ---- */
+body.sc-blackout::after { content: ''; position: fixed; inset: 0; z-index: 900;
+  pointer-events: none; background: rgba(2,6,14,.3); }
+
+/* ---- UFO โจมตี (ufo_invade.png = จาน+ลำแสง+วงแหวนพื้นในภาพเดียว) ----
+   ยึด "ขอบล่างของภาพ = ฐานตึก" → translate(-50%,-100%) · ขนาด/ตำแหน่งมาจาก JS */
+.evt-ufo { position: absolute; transform: translate(-50%,-100%) translateY(-26px); opacity: 0;
+  transition: transform .75s cubic-bezier(.25,.8,.35,1), opacity .5s ease; }
+.evt-ufo.in { transform: translate(-50%,-100%); opacity: 1; }
+.evt-ufo.out { transform: translate(-50%,-100%) translateY(-70px); opacity: 0;
+  transition: transform .7s ease-in, opacity .7s ease-in; }
+.evt-ufo-img { position: relative; display: block; width: 100%; height: 100%; }
+.evt-ufo-img .evt-emoji { position: absolute; left: 0; right: 0; top: 0; text-align: center;
+  font-size: clamp(56px, 7vw, 96px); }
+.evt-ufo-img img { width: 100%; height: 100%; object-fit: fill;
+  filter: drop-shadow(0 0 22px rgba(90,190,255,.6)); }
+.evt-ufo.zap .evt-ufo-img { animation: evtZap .13s steps(2) infinite alternate; }
+@keyframes evtZap { from { opacity: .84; filter: brightness(1); }
+  to { opacity: 1; filter: brightness(1.45) drop-shadow(0 0 30px rgba(150,220,255,.9)); } }
+
+/* ---- พายุหมุน (hurricane1-3 = 3 เฟรมสลับจาก JS) ---- */
+/* ยึดต่ำกว่าฐานตึกเล็กน้อย ให้ก้อนพายุคลุมตัวตึกแทนที่จะลอยอยู่เหนือหัว */
+.evt-storm { position: absolute; transform: translate(-50%,-84%); opacity: .93; }
+.evt-storm-img { position: relative; display: block; width: 100%; height: 100%; }
+.evt-storm-img .evt-emoji { position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-size: clamp(90px, 13vw, 180px); }
+.evt-storm-img img { width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(20,40,70,.5)); }
+/* ⚠️ ห้ามใส่ rotate ให้ก้อนพายุ (user 2026-07-20) — อาร์ต 3 เฟรมหมุนในตัวอยู่แล้ว
+   หมุนซ้ำจะกลายเป็นภาพหมุนทั้งใบ ไม่ใช่พายุหมุน */
+
+@keyframes evtShake { 0%,100% { transform: translate(0,0); } 20% { transform: translate(-6px,4px); }
+  40% { transform: translate(6px,-4px); } 60% { transform: translate(-5px,-3px); } 80% { transform: translate(5px,3px); } }
+.evt-shake { animation: evtShake .3s ease; }
+
+/* ลดการเคลื่อนไหว (accessibility) */
+@media (prefers-reduced-motion: reduce) {
+  .evt-paper { transition: none; transform: none; }
+  /* คัตซีนอุกกาบาต (ตก/เปลวไฟ/หางไฟ/แฟลช) ยังเล่นเสมอ — user สั่ง 2026-07-20
+     เพราะ Windows ที่ปิด "animation effects" ทำให้เอฟเฟกต์หายหมด · ปิดเฉพาะจอสั่น */
+  .evt-shake { animation: none; }
+}
